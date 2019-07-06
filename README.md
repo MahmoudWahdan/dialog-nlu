@@ -1,1 +1,1 @@
-# dialog-nluImplementation of the state of the art researches in Dialog System NLU![Joint BERT](img/joint_bert.PNG?)
+# Dialog System NLUImplementation of the state of the art researches in Dialog System NLU## Implemented Papers- [BERT for Joint Intent Classification and Slot Filling](https://arxiv.org/abs/1902.10909)    ### BERT for Joint Intent Classification and Slot Filling![Joint BERT](img/joint_bert.PNG?)
