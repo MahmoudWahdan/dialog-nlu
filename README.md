@@ -1,2 +1,1 @@
-# dialog-nlu
-Implementation of the state of the art researches in Dialog System NLU
+# dialog-nluImplementation of the state of the art researches in Dialog System NLU![Joint BERT](img/joint_bert.PNG?)
