@@ -8,6 +8,7 @@ from vectorizers.bert_vectorizer import BERTVectorizer
 from vectorizers.tags_vectorizer import TagsVectorizer
 from models.joint_bert import JointBertModel
 
+import argparse
 from sklearn.preprocessing import LabelEncoder
 import numpy as np
 import os
@@ -15,20 +16,31 @@ import pickle
 import tensorflow as tf
 
 
+# read command-line parameters
+parser = argparse.ArgumentParser('Training the Joint BERT NLU model')
+parser.add_argument('--train', '-t', help = 'Path to training data in Goo et al format', type = str, required = True)
+parser.add_argument('--val', '-v', help = 'Path to validation data in Goo et al format', type = str, required = True)
+parser.add_argument('--save', '-s', help = 'Folder path to save the trained model', type = str, required = True)
+parser.add_argument('--epochs', '-e', help = 'Number of epochs', type = int, default = 5, required = False)
+parser.add_argument('--batch', '-bs', help = 'Batch size', type = int, default = 64, required = False)
+
+args = parser.parse_args()
+train_data_folder_path = args.train
+val_data_folder_path = args.val
+save_folder_path = args.save
+epochs = args.epochs
+batch_size = args.batch
+
+
 tf.compat.v1.random.set_random_seed(7)
 
 
 sess = tf.compat.v1.Session()
 
-save_folder_path = 'saved_models/joint_bert_model'
-epochs = 5
-batch_size = 64
-#max_seq_length = 52 # 50 + start + end
 bert_model_hub_path = 'https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1'
 
-train_text_arr, train_tags_arr, train_intents = Reader.read('data/atis/train')
-val_text_arr, val_tags_arr, val_intents = Reader.read('data/atis/valid')
-
+train_text_arr, train_tags_arr, train_intents = Reader.read(train_data_folder_path)
+val_text_arr, val_tags_arr, val_intents = Reader.read(val_data_folder_path)
 
 
 bert_vectorizer = BERTVectorizer(sess, bert_model_hub_path)
