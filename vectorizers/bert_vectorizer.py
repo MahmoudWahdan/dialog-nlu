@@ -5,6 +5,7 @@
 
 import tensorflow as tf
 import tensorflow_hub as hub
+import numpy as np
 from bert.tokenization import FullTokenizer
 
 
@@ -57,12 +58,13 @@ class BERTVectorizer:
             input_mask.append(mask)
             segment_ids.append(seg_ids)
             valid_positions.append(valid_pos)
-            
+
+        sequence_lengths = np.array([len(i) for i in input_ids])            
         input_ids = tf.keras.preprocessing.sequence.pad_sequences(input_ids, padding='post')
         input_mask = tf.keras.preprocessing.sequence.pad_sequences(input_mask, padding='post')
         segment_ids = tf.keras.preprocessing.sequence.pad_sequences(segment_ids, padding='post')
         valid_positions = tf.keras.preprocessing.sequence.pad_sequences(valid_positions, padding='post')
-        return input_ids, input_mask, segment_ids, valid_positions      
+        return input_ids, input_mask, segment_ids, valid_positions, sequence_lengths
     
     
     def __vectorize(self, text: str):
