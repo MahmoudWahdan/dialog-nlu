@@ -44,8 +44,8 @@ val_text_arr, val_tags_arr, val_intents = Reader.read(val_data_folder_path)
 
 
 bert_vectorizer = BERTVectorizer(sess, bert_model_hub_path)
-train_input_ids, train_input_mask, train_segment_ids, train_valid_positions = bert_vectorizer.transform(train_text_arr)
-val_input_ids, val_input_mask, val_segment_ids, val_valid_positions = bert_vectorizer.transform(val_text_arr)
+train_input_ids, train_input_mask, train_segment_ids, train_valid_positions, train_sequence_lengths = bert_vectorizer.transform(train_text_arr)
+val_input_ids, val_input_mask, val_segment_ids, val_valid_positions, val_sequence_lengths = bert_vectorizer.transform(val_text_arr)
 
 
 tags_vectorizer = TagsVectorizer()

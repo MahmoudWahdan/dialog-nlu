@@ -49,9 +49,9 @@ model = JointBertModel.load(load_folder_path, sess)
 
 
 data_text_arr, data_tags_arr, data_intents = Reader.read(data_folder_path)
-data_input_ids, data_input_mask, data_segment_ids, data_valid_positions = bert_vectorizer.transform(data_text_arr)
+data_input_ids, data_input_mask, data_segment_ids, data_valid_positions, data_sequence_lengths = bert_vectorizer.transform(data_text_arr)
 
-def get_results(input_ids, input_mask, segment_ids, valid_positions, tags_arr, 
+def get_results(input_ids, input_mask, segment_ids, valid_positions, sequence_lengths, tags_arr, 
                 intents, tags_vectorizer, intents_label_encoder):
     predicted_tags, predicted_intents = model.predict_slots_intent(
             [input_ids, input_mask, segment_ids, valid_positions], 
@@ -64,6 +64,7 @@ def get_results(input_ids, input_mask, segment_ids, valid_positions, tags_arr,
 
 print('==== Evaluation ====')
 f1_score, acc = get_results(data_input_ids, data_input_mask, data_segment_ids, data_valid_positions,
+                            data_sequence_lengths, 
                             data_tags_arr, data_intents, tags_vectorizer, intents_label_encoder)
 print('Slot f1_score = %f' % f1_score)
 print('Intent accuracy = %f' % acc)
