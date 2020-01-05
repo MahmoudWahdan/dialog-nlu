@@ -9,6 +9,7 @@ from tensorflow.python.keras.models import Model
 from tensorflow.python.keras.layers import Input, Dense, Multiply, TimeDistributed
 from models.nlu_model import NLUModel
 from layers.bert_layer import BertLayer
+from layers.albert_layer import AlbertLayer
 import numpy as np
 import os
 import json
@@ -16,15 +17,20 @@ import json
 
 class JointBertModel(NLUModel):
 
-    def __init__(self, slots_num, intents_num, sess, num_bert_fine_tune_layers=10):
+    def __init__(self, slots_num, intents_num, bert_hub_path, sess, num_bert_fine_tune_layers=10,
+                 is_bert=True):
         self.slots_num = slots_num
         self.intents_num = intents_num
+        self.bert_hub_path = bert_hub_path
         self.num_bert_fine_tune_layers = num_bert_fine_tune_layers
+        self.is_bert = is_bert
         
         self.model_params = {
                 'slots_num': slots_num,
                 'intents_num': intents_num,
-                'num_bert_fine_tune_layers': num_bert_fine_tune_layers
+                'bert_hub_path': bert_hub_path,
+                'num_bert_fine_tune_layers': num_bert_fine_tune_layers,
+                'is_bert': is_bert
                 }
         
         self.build_model()
@@ -56,9 +62,16 @@ class JointBertModel(NLUModel):
         in_valid_positions = Input(shape=(None, self.slots_num), name='valid_positions')
         bert_inputs = [in_id, in_mask, in_segment, in_valid_positions]
         
-        bert_pooled_output, bert_sequence_output = BertLayer(
-                n_fine_tune_layers=self.num_bert_fine_tune_layers, 
+        if self.is_bert:
+            bert_pooled_output, bert_sequence_output = BertLayer(
+                n_fine_tune_layers=self.num_bert_fine_tune_layers,
+                bert_path=self.bert_hub_path,
                 pooling='mean', name='BertLayer')(bert_inputs)
+        else:
+            bert_pooled_output, bert_sequence_output = AlbertLayer(
+                fine_tune=True if self.num_bert_fine_tune_layers > 0 else False,
+                albert_path=self.bert_hub_path,
+                pooling='mean', name='AlbertLayer')(bert_inputs)
         
         intents_fc = Dense(self.intents_num, activation='softmax', name='intent_classifier')(bert_pooled_output)
         
@@ -117,8 +130,10 @@ class JointBertModel(NLUModel):
             
         slots_num = model_params['slots_num'] 
         intents_num = model_params['intents_num']
+        bert_hub_path = model_params['bert_hub_path']
         num_bert_fine_tune_layers = model_params['num_bert_fine_tune_layers']
+        is_bert = model_params['is_bert']
             
-        new_model = JointBertModel(slots_num, intents_num, sess, num_bert_fine_tune_layers)
+        new_model = JointBertModel(slots_num, intents_num, bert_hub_path, sess, num_bert_fine_tune_layers, is_bert)
         new_model.model.load_weights(os.path.join(load_folder_path,'joint_bert_model.h5'))
         return new_model

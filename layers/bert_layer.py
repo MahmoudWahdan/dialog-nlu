@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-@author: mwahdan
+Original implementation: https://github.com/strongio/keras-bert/blob/master/keras-bert.ipynb
+
+Edited by mwahdan
 """
 
 import tensorflow as tf
@@ -11,7 +13,8 @@ import tensorflow_hub as hub
 class BertLayer(tf.keras.layers.Layer):
     
     def __init__(self, n_fine_tune_layers=10, pooling='first',
-        bert_path="https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1", **kwargs,):
+        bert_path="https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1", 
+        **kwargs,):
         self.n_fine_tune_layers = n_fine_tune_layers
         self.trainable = True
         self.output_size = 768
@@ -79,3 +82,15 @@ class BertLayer(tf.keras.layers.Layer):
 
     def compute_output_shape(self, input_shape):
         return (input_shape[0], input_shape[1], self.output_size)
+    
+    
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({
+            'n_fine_tune_layers': self.n_fine_tune_layers,
+            'trainable': self.trainable,
+            'output_size': self.output_size,
+            'pooling': self.pooling,
+            'bert_path': self.bert_path,
+        })
+        return config

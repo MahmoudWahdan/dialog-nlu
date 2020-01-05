@@ -16,22 +16,34 @@ from sklearn import metrics
 
 
 # read command-line parameters
-parser = argparse.ArgumentParser('Evaluating the Joint BERT NLU model')
-parser.add_argument('--model', '-m', help = 'Path to joint BERT NLU model', type = str, required = True)
+parser = argparse.ArgumentParser('Evaluating the Joint BERT / ALBERT NLU model')
+parser.add_argument('--model', '-m', help = 'Path to joint BERT / ALBERT NLU model', type = str, required = True)
 parser.add_argument('--data', '-d', help = 'Path to data in Goo et al format', type = str, required = True)
 parser.add_argument('--batch', '-bs', help = 'Batch size', type = int, default = 128, required = False)
+parser.add_argument('--type', '-tp', help = 'bert   or    albert', type = str, default = 'bert', required = False)
+
+
+VALID_TYPES = ['bert', 'albert']
 
 args = parser.parse_args()
 load_folder_path = args.model
 data_folder_path = args.data
 batch_size = args.batch
+type_ = args.type
 
 
 sess = tf.compat.v1.Session()
 
-
-bert_model_hub_path = 'https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1'
-bert_vectorizer = BERTVectorizer(sess, bert_model_hub_path)
+if type_ == 'bert':
+    bert_model_hub_path = 'https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1'
+    is_bert = True
+elif type_ == 'albert':
+    bert_model_hub_path = 'https://tfhub.dev/google/albert_base/1'
+    is_bert = False
+else:
+    raise ValueError('type must be one of these values: %s' % str(VALID_TYPES))
+    
+bert_vectorizer = BERTVectorizer(sess, is_bert, bert_model_hub_path)
 
 # loading models
 print('Loading models ...')

@@ -23,6 +23,10 @@ parser.add_argument('--val', '-v', help = 'Path to validation data in Goo et al 
 parser.add_argument('--save', '-s', help = 'Folder path to save the trained model', type = str, required = True)
 parser.add_argument('--epochs', '-e', help = 'Number of epochs', type = int, default = 5, required = False)
 parser.add_argument('--batch', '-bs', help = 'Batch size', type = int, default = 64, required = False)
+parser.add_argument('--type', '-tp', help = 'bert   or    albert', type = str, default = 'bert', required = False)
+
+
+VALID_TYPES = ['bert', 'albert']
 
 args = parser.parse_args()
 train_data_folder_path = args.train
@@ -30,6 +34,7 @@ val_data_folder_path = args.val
 save_folder_path = args.save
 epochs = args.epochs
 batch_size = args.batch
+type_ = args.type
 
 
 tf.compat.v1.random.set_random_seed(7)
@@ -37,17 +42,25 @@ tf.compat.v1.random.set_random_seed(7)
 
 sess = tf.compat.v1.Session()
 
-bert_model_hub_path = 'https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1'
+if type_ == 'bert':
+    bert_model_hub_path = 'https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1'
+    is_bert = True
+elif type_ == 'albert':
+    bert_model_hub_path = 'https://tfhub.dev/google/albert_base/1'
+    is_bert = False
+else:
+    raise ValueError('type must be one of these values: %s' % str(VALID_TYPES))
 
 train_text_arr, train_tags_arr, train_intents = Reader.read(train_data_folder_path)
 val_text_arr, val_tags_arr, val_intents = Reader.read(val_data_folder_path)
 
 
-bert_vectorizer = BERTVectorizer(sess, bert_model_hub_path)
+bert_vectorizer = BERTVectorizer(sess, is_bert, bert_model_hub_path)
 train_input_ids, train_input_mask, train_segment_ids, train_valid_positions, train_sequence_lengths = bert_vectorizer.transform(train_text_arr)
 val_input_ids, val_input_mask, val_segment_ids, val_valid_positions, val_sequence_lengths = bert_vectorizer.transform(val_text_arr)
 
 
+print('vectorize tags ...')
 tags_vectorizer = TagsVectorizer()
 tags_vectorizer.fit(train_tags_arr)
 train_tags = tags_vectorizer.transform(train_tags_arr, train_valid_positions)
@@ -62,13 +75,15 @@ val_tags = tf.keras.utils.to_categorical(val_tags)
 slots_num = len(tags_vectorizer.label_encoder.classes_)
 
 
+print('encode labels ...')
 intents_label_encoder = LabelEncoder()
 train_intents = intents_label_encoder.fit_transform(train_intents).astype(np.int32)
 val_intents = intents_label_encoder.transform(val_intents).astype(np.int32)
 intents_num = len(intents_label_encoder.classes_)
 
 
-model = JointBertCRFModel(slots_num, intents_num, sess, num_bert_fine_tune_layers=10)
+model = JointBertCRFModel(slots_num, intents_num, bert_model_hub_path, sess, 
+                          num_bert_fine_tune_layers=10, is_bert=is_bert)
 
 model.fit([train_input_ids, train_input_mask, train_segment_ids, train_valid_positions, train_sequence_lengths], [train_tags, train_intents],
           validation_data=([val_input_ids, val_input_mask, val_segment_ids, val_valid_positions, val_sequence_lengths], [val_tags, val_intents]),

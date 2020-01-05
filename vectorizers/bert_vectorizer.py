@@ -6,19 +6,21 @@
 import tensorflow as tf
 import tensorflow_hub as hub
 import numpy as np
-from bert.tokenization import FullTokenizer
+
 
 
 class BERTVectorizer:
     
-    def __init__(self, sess,
-                 bert_model_hub_path='https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1'):
+    def __init__(self, sess, is_bert,
+#                 bert_model_hub_path='https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1'
+                 bert_model_hub_path="https://tfhub.dev/google/albert_base/1"):
         self.sess = sess
+        self.is_bert = is_bert
         self.bert_model_hub_path = bert_model_hub_path
-        self.create_tokenizer_from_hub_module()
+        self.create_tokenizer_from_hub_module(is_bert=is_bert)
     
         
-    def create_tokenizer_from_hub_module(self):
+    def create_tokenizer_from_hub_module(self, is_bert):
         """Get the vocab file and casing info from the Hub module."""
         bert_module =  hub.Module(self.bert_model_hub_path)
         tokenization_info = bert_module(signature="tokenization_info", as_dict=True)
@@ -28,8 +30,16 @@ class BERTVectorizer:
                 tokenization_info["do_lower_case"],
             ]
         )
-    
-        self.tokenizer = FullTokenizer(vocab_file=vocab_file, do_lower_case=do_lower_case)
+        
+        if is_bert:
+            from bert.tokenization import FullTokenizer
+            self.tokenizer = FullTokenizer(vocab_file=vocab_file, 
+                                           do_lower_case=do_lower_case)
+        else:
+            from vectorizers.albert_tokenization import FullTokenizer
+            self.tokenizer = FullTokenizer(vocab_file=vocab_file, 
+                                       do_lower_case=do_lower_case,
+                                       spm_model_file=vocab_file)
     
     
     def tokenize(self, text: str):
