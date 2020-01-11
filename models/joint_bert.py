@@ -97,10 +97,12 @@ class JointBertModel(NLUModel):
         self.visualize_metric(history.history, 'loss')
         self.visualize_metric(history.history, 'intent_classifier_acc')
         
+        
     def prepare_valid_positions(self, in_valid_positions):
         in_valid_positions = np.expand_dims(in_valid_positions, axis=2)
         in_valid_positions = np.tile(in_valid_positions, (1, 1, self.slots_num))
         return in_valid_positions
+    
         
     def initialize_vars(self, sess):
         sess.run(tf.compat.v1.local_variables_initializer())
@@ -108,7 +110,8 @@ class JointBertModel(NLUModel):
         K.set_session(sess)
         
         
-    def predict_slots_intent(self, x, slots_vectorizer, intent_vectorizer, remove_start_end=True):
+    def predict_slots_intent(self, x, slots_vectorizer, intent_vectorizer, remove_start_end=True,
+                             include_intent_prob=False):
         valid_positions = x[3]
         x = (x[0], x[1], x[2], self.prepare_valid_positions(valid_positions))
         y_slots, y_intent = self.predict(x)
@@ -116,13 +119,18 @@ class JointBertModel(NLUModel):
         if remove_start_end:
             slots = [x[1:-1] for x in slots]
             
-        intents = np.array([intent_vectorizer.inverse_transform([np.argmax(y_intent[i])])[0] for i in range(y_intent.shape[0])])
+        if not include_intent_prob:
+            intents = np.array([intent_vectorizer.inverse_transform([np.argmax(i)])[0] for i in y_intent])
+        else:
+            intents = np.array([(intent_vectorizer.inverse_transform([np.argmax(i)])[0], round(float(np.max(i)), 4)) for i in y_intent])
         return slots, intents
+    
 
     def save(self, model_path):
         with open(os.path.join(model_path, 'params.json'), 'w') as json_file:
             json.dump(self.model_params, json_file)
         self.model.save(os.path.join(model_path, 'joint_bert_model.h5'))
+        
         
     def load(load_folder_path, sess):
         with open(os.path.join(load_folder_path, 'params.json'), 'r') as json_file:
