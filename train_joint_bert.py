@@ -37,16 +37,13 @@ batch_size = args.batch
 type_ = args.type
 
 
-tf.compat.v1.random.set_random_seed(7)
-
-
-sess = tf.compat.v1.Session()
+# tf.compat.v1.random.set_random_seed(7)
 
 if type_ == 'bert':
-    bert_model_hub_path = 'https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1'
+    bert_model_hub_path = "https://tfhub.dev/tensorflow/bert_en_uncased_L-12_H-768_A-12/1"
     is_bert = True
 elif type_ == 'albert':
-    bert_model_hub_path = 'https://tfhub.dev/google/albert_base/1'
+    bert_model_hub_path = "https://tfhub.dev/tensorflow/albert_en_base/1"
     is_bert = False
 else:
     raise ValueError('type must be one of these values: %s' % str(VALID_TYPES))
@@ -56,7 +53,7 @@ train_text_arr, train_tags_arr, train_intents = Reader.read(train_data_folder_pa
 val_text_arr, val_tags_arr, val_intents = Reader.read(val_data_folder_path)
 
 print('vectorize data ...')
-bert_vectorizer = BERTVectorizer(sess, is_bert, bert_model_hub_path)
+bert_vectorizer = BERTVectorizer(is_bert, bert_model_hub_path)
 train_input_ids, train_input_mask, train_segment_ids, train_valid_positions, train_sequence_lengths = bert_vectorizer.transform(train_text_arr)
 val_input_ids, val_input_mask, val_segment_ids, val_valid_positions, val_sequence_lengths = bert_vectorizer.transform(val_text_arr)
 
@@ -76,7 +73,7 @@ val_intents = intents_label_encoder.transform(val_intents).astype(np.int32)
 intents_num = len(intents_label_encoder.classes_)
 
 
-model = JointBertModel(slots_num, intents_num, bert_model_hub_path, sess, 
+model = JointBertModel(slots_num, intents_num, bert_model_hub_path, 
                        num_bert_fine_tune_layers=10, is_bert=is_bert)
 
 print('training model ...')

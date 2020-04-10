@@ -4,12 +4,10 @@
 """
 
 import tensorflow as tf
-from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.models import Model
 from tensorflow.python.keras.layers import Input, Dense, Multiply, TimeDistributed
 from models.nlu_model import NLUModel
-from layers.bert_layer import BertLayer
-from layers.albert_layer import AlbertLayer
+import tensorflow_hub as hub
 import numpy as np
 import os
 import json
@@ -17,7 +15,7 @@ import json
 
 class JointBertModel(NLUModel):
 
-    def __init__(self, slots_num, intents_num, bert_hub_path, sess, num_bert_fine_tune_layers=10,
+    def __init__(self, slots_num, intents_num, bert_hub_path, num_bert_fine_tune_layers=10,
                  is_bert=True):
         self.slots_num = slots_num
         self.intents_num = intents_num
@@ -35,8 +33,6 @@ class JointBertModel(NLUModel):
         
         self.build_model()
         self.compile_model()
-        
-        self.initialize_vars(sess)
         
         
     def compile_model(self):
@@ -56,29 +52,26 @@ class JointBertModel(NLUModel):
         
 
     def build_model(self):
-        in_id = Input(shape=(None,), name='input_ids')
-        in_mask = Input(shape=(None,), name='input_masks')
-        in_segment = Input(shape=(None,), name='segment_ids')
+        in_id = Input(shape=(None,), name='input_word_ids', dtype=tf.int32)
+        in_mask = Input(shape=(None,), name='input_mask', dtype=tf.int32)
+        in_segment = Input(shape=(None,), name='input_type_ids', dtype=tf.int32)
         in_valid_positions = Input(shape=(None, self.slots_num), name='valid_positions')
-        bert_inputs = [in_id, in_mask, in_segment, in_valid_positions]
+        bert_inputs = [in_id, in_mask, in_segment]
+        inputs = bert_inputs + [in_valid_positions]
         
         if self.is_bert:
-            bert_pooled_output, bert_sequence_output = BertLayer(
-                n_fine_tune_layers=self.num_bert_fine_tune_layers,
-                bert_path=self.bert_hub_path,
-                pooling='mean', name='BertLayer')(bert_inputs)
+            name = 'BertLayer'
         else:
-            bert_pooled_output, bert_sequence_output = AlbertLayer(
-                fine_tune=True if self.num_bert_fine_tune_layers > 0 else False,
-                albert_path=self.bert_hub_path,
-                pooling='mean', name='AlbertLayer')(bert_inputs)
+            name = 'AlbertLayer'
+        bert_pooled_output, bert_sequence_output = hub.KerasLayer(self.bert_hub_path,
+                              trainable=True, name=name)(bert_inputs)
         
         intents_fc = Dense(self.intents_num, activation='softmax', name='intent_classifier')(bert_pooled_output)
         
         slots_output = TimeDistributed(Dense(self.slots_num, activation='softmax'))(bert_sequence_output)
         slots_output = Multiply(name='slots_tagger')([slots_output, in_valid_positions])
         
-        self.model = Model(inputs=bert_inputs, outputs=[slots_output, intents_fc])
+        self.model = Model(inputs=inputs, outputs=[slots_output, intents_fc])
 
         
     def fit(self, X, Y, validation_data=None, epochs=5, batch_size=32):
@@ -103,12 +96,7 @@ class JointBertModel(NLUModel):
         in_valid_positions = np.tile(in_valid_positions, (1, 1, self.slots_num))
         return in_valid_positions
     
-        
-    def initialize_vars(self, sess):
-        sess.run(tf.compat.v1.local_variables_initializer())
-        sess.run(tf.compat.v1.global_variables_initializer())
-        K.set_session(sess)
-        
+                
         
     def predict_slots_intent(self, x, slots_vectorizer, intent_vectorizer, remove_start_end=True,
                              include_intent_prob=False):
@@ -132,7 +120,7 @@ class JointBertModel(NLUModel):
         self.model.save(os.path.join(model_path, 'joint_bert_model.h5'))
         
         
-    def load(load_folder_path, sess):
+    def load(load_folder_path):
         with open(os.path.join(load_folder_path, 'params.json'), 'r') as json_file:
             model_params = json.load(json_file)
             
@@ -142,6 +130,6 @@ class JointBertModel(NLUModel):
         num_bert_fine_tune_layers = model_params['num_bert_fine_tune_layers']
         is_bert = model_params['is_bert']
             
-        new_model = JointBertModel(slots_num, intents_num, bert_hub_path, sess, num_bert_fine_tune_layers, is_bert)
+        new_model = JointBertModel(slots_num, intents_num, bert_hub_path, num_bert_fine_tune_layers, is_bert)
         new_model.model.load_weights(os.path.join(load_folder_path,'joint_bert_model.h5'))
         return new_model

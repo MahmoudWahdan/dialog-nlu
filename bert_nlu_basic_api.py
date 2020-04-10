@@ -19,15 +19,9 @@ import os
 # Create app
 app = Flask(__name__)
 
-def initialize():
-    global graph
-    graph = tf.get_default_graph()
-    global sess
-    sess = tf.compat.v1.Session()
-    set_session(sess)
-    
+def initialize():    
     global bert_vectorizer
-    bert_vectorizer = BERTVectorizer(sess, is_bert, bert_model_hub_path)
+    bert_vectorizer = BERTVectorizer(is_bert, bert_model_hub_path)
 
     # loading models
     print('Loading models ...')
@@ -46,7 +40,7 @@ def initialize():
         intents_num = len(intents_label_encoder.classes_)
     
     global model
-    model = JointBertModel.load(load_folder_path, sess)
+    model = JointBertModel.load(load_folder_path)
     
 
 @app.route('/', methods=['GET', 'POST'])
@@ -56,30 +50,27 @@ def hello():
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
-    global sess
-    global graph
-    with graph.as_default():
-        set_session(sess)
-        input_json = request.json
-        utterance = input_json["utterance"]
-        tokens = utterance.split()
-        print(utterance)
-        input_ids, input_mask, segment_ids, valid_positions, data_sequence_lengths = bert_vectorizer.transform([utterance])
-        predicted_tags, predicted_intents = model.predict_slots_intent(
-                [input_ids, input_mask, segment_ids, valid_positions], 
-                tags_vectorizer, intents_label_encoder, remove_start_end=True,
-                include_intent_prob=True)
-        
-        slots = convert_to_slots(predicted_tags[0])
-        slots = [{"slot": slot, "start": start, "end": end, "value": ' '.join(tokens[start:end + 1])} for slot, start, end in slots]
-        
-        response = {
-                "intent": {
-                        "name": predicted_intents[0][0].strip(),
-                        "confidence": predicted_intents[0][1]
-                        },
-                "slots": slots
-                }
+    input_json = request.json
+    utterance = input_json["utterance"]
+    tokens = utterance.split()
+    print(utterance)
+    input_ids, input_mask, segment_ids, valid_positions, data_sequence_lengths = bert_vectorizer.transform([utterance])
+    predicted_tags, predicted_intents = model.predict_slots_intent(
+            [input_ids, input_mask, segment_ids, valid_positions], 
+            tags_vectorizer, intents_label_encoder, remove_start_end=True,
+            include_intent_prob=True)
+    
+    slots = convert_to_slots(predicted_tags[0])
+    slots = [{"slot": slot, "start": start, "end": end, "value": ' '.join(tokens[start:end + 1])} for slot, start, end in slots]
+    
+    response = {
+            "intent": {
+                    "name": predicted_intents[0][0].strip(),
+                    "confidence": predicted_intents[0][1]
+                    },
+            "slots": slots
+            }
+
     return jsonify(response)
 
 
@@ -96,18 +87,17 @@ if __name__ == '__main__':
     type_ = args.type
     
     if type_ == 'bert':
-        bert_model_hub_path = 'https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1'
+        bert_model_hub_path = "https://tfhub.dev/tensorflow/bert_en_uncased_L-12_H-768_A-12/1"
         is_bert = True
     elif type_ == 'albert':
-        bert_model_hub_path = 'https://tfhub.dev/google/albert_base/1'
+        bert_model_hub_path = "https://tfhub.dev/tensorflow/albert_en_base/1"
         is_bert = False
     else:
-        raise ValueError('type must be one of these values: %s' % str(VALID_TYPES))
-        
+        raise ValueError('type must be one of these values: %s' % str(VALID_TYPES))       
     
 
     
     print(('Starting the Server'))
     initialize()
     # Run app
-    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
+    app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)

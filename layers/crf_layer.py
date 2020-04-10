@@ -2,7 +2,7 @@
 """
 Original Implementation from: https://github.com/Hironsan/keras-crf-layer
 
-Adapted tensorflow implementation by:
+Adapted tensorflow 2 implementation by:
 @author: mwahdan
 """
 
@@ -10,7 +10,7 @@ Adapted tensorflow implementation by:
 import tensorflow as tf
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer, InputSpec
-from tensorflow.contrib.crf import crf_decode
+from tensorflow_addons.text import crf_decode, crf
 
 
 class CRFLayer(Layer):
@@ -35,8 +35,8 @@ class CRFLayer(Layer):
         assert len(input_shape) == 2
         assert len(input_shape[0]) == 3
         assert len(input_shape[1]) == 2
-        n_steps = input_shape[0][1].value
-        n_classes = input_shape[0][2].value
+        n_steps = input_shape[0][1]
+        n_classes = input_shape[0][2]
         assert n_steps is None or n_steps >= 2
 
         self.transition_params = self.add_weight(shape=(n_classes, n_classes),
@@ -65,11 +65,9 @@ class CRFLayer(Layer):
 
     def call(self, inputs, mask=None, **kwargs):
         inputs, sequence_lengths = inputs
-#        self.sequence_lengths = K.flatten(sequence_lengths)
         self.sequence_lengths = tf.reshape(sequence_lengths, [-1])
         y_pred = self.viterbi_decode(inputs, self.sequence_lengths)
         nb_classes = self.input_spec[0].shape[2]
-#        y_pred_one_hot = K.one_hot(y_pred, nb_classes)
         y_pred_one_hot = tf.one_hot(y_pred, nb_classes)
 
         return K.in_train_phase(inputs, y_pred_one_hot)
@@ -84,9 +82,8 @@ class CRFLayer(Layer):
         Returns:
             loss: A scalar containing the log-likelihood of the given sequence of tag indices.
         """
-#        y_true = K.cast(K.argmax(y_true, axis=-1), dtype='int32')
         y_true = tf.cast(tf.argmax(y_true, axis=-1), dtype='int32')
-        log_likelihood, self.transition_params = tf.contrib.crf.crf_log_likelihood(
+        log_likelihood, self.transition_params = crf.crf_log_likelihood(
             y_pred, y_true, self.sequence_lengths, self.transition_params)
         loss = tf.reduce_mean(-log_likelihood)
 
