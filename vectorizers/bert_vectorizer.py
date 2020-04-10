@@ -11,10 +11,7 @@ import numpy as np
 
 class BERTVectorizer:
     
-    def __init__(self, sess, is_bert,
-#                 bert_model_hub_path='https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1'
-                 bert_model_hub_path="https://tfhub.dev/google/albert_base/1"):
-        self.sess = sess
+    def __init__(self, is_bert, bert_model_hub_path):
         self.is_bert = is_bert
         self.bert_model_hub_path = bert_model_hub_path
         self.create_tokenizer_from_hub_module(is_bert=is_bert)
@@ -22,24 +19,27 @@ class BERTVectorizer:
         
     def create_tokenizer_from_hub_module(self, is_bert):
         """Get the vocab file and casing info from the Hub module."""
-        bert_module =  hub.Module(self.bert_model_hub_path)
-        tokenization_info = bert_module(signature="tokenization_info", as_dict=True)
-        vocab_file, do_lower_case = self.sess.run(
-            [
-                tokenization_info["vocab_file"],
-                tokenization_info["do_lower_case"],
-            ]
-        )
+        # bert_module =  hub.Module(self.bert_model_hub_path)
+        module_layer = hub.KerasLayer(self.bert_model_hub_path,
+                              trainable=False)
         
         if is_bert:
-            from bert.tokenization import FullTokenizer
-            self.tokenizer = FullTokenizer(vocab_file=vocab_file, 
-                                           do_lower_case=do_lower_case)
+            from vectorizers.tokenization import FullTokenizer
+            vocab_file = module_layer.resolved_object.vocab_file.asset_path.numpy()
+            do_lower_case = module_layer.resolved_object.do_lower_case.numpy()
+            self.tokenizer = FullTokenizer(vocab_file, do_lower_case)
         else:
+            sp_model_file = module_layer.resolved_object.sp_model_file.asset_path.numpy()
+            
+            # commented and used the below instead because of lower case problem
+            # from vectorizers.tokenization import FullSentencePieceTokenizer
+            # self.tokenizer = FullSentencePieceTokenizer(sp_model_file)
             from vectorizers.albert_tokenization import FullTokenizer
-            self.tokenizer = FullTokenizer(vocab_file=vocab_file, 
-                                       do_lower_case=do_lower_case,
-                                       spm_model_file=vocab_file)
+            self.tokenizer = FullTokenizer(vocab_file=sp_model_file, 
+                                        do_lower_case=True,
+                                        spm_model_file=sp_model_file)
+        
+        del module_layer
     
     
     def tokenize(self, text: str):
