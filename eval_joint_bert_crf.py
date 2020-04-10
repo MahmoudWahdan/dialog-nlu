@@ -13,7 +13,7 @@ import os
 import pickle
 import tensorflow as tf
 from sklearn import metrics
-import numpy as np
+
 
 # read command-line parameters
 parser = argparse.ArgumentParser('Evaluating the Joint BERT / ALBERT NLU model')
@@ -32,19 +32,16 @@ batch_size = args.batch
 type_ = args.type
 
 
-sess = tf.compat.v1.Session()
-
-
 if type_ == 'bert':
-    bert_model_hub_path = 'https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1'
+    bert_model_hub_path = "https://tfhub.dev/tensorflow/bert_en_uncased_L-12_H-768_A-12/1"
     is_bert = True
 elif type_ == 'albert':
-    bert_model_hub_path = 'https://tfhub.dev/google/albert_base/1'
+    bert_model_hub_path = "https://tfhub.dev/tensorflow/albert_en_base/1"
     is_bert = False
 else:
     raise ValueError('type must be one of these values: %s' % str(VALID_TYPES))
 
-bert_vectorizer = BERTVectorizer(sess, is_bert, bert_model_hub_path)
+bert_vectorizer = BERTVectorizer(is_bert, bert_model_hub_path)
 
 # loading models
 print('Loading models ...')
@@ -58,7 +55,7 @@ with open(os.path.join(load_folder_path, 'intents_label_encoder.pkl'), 'rb') as 
     intents_label_encoder = pickle.load(handle)
     intents_num = len(intents_label_encoder.classes_)
     
-model = JointBertCRFModel.load(load_folder_path, sess)
+model = JointBertCRFModel.load(load_folder_path)
 
 
 data_text_arr, data_tags_arr, data_intents = Reader.read(data_folder_path)
