@@ -24,6 +24,7 @@ parser.add_argument('--save', '-s', help = 'Folder path to save the trained mode
 parser.add_argument('--epochs', '-e', help = 'Number of epochs', type = int, default = 5, required = False)
 parser.add_argument('--batch', '-bs', help = 'Batch size', type = int, default = 64, required = False)
 parser.add_argument('--type', '-tp', help = 'bert   or    albert', type = str, default = 'bert', required = False)
+parser.add_argument('--model', '-m', help = 'Path to joint BERT / ALBERT NLU model for incremental training', type = str, required = False)
 
 
 VALID_TYPES = ['bert', 'albert']
@@ -35,6 +36,7 @@ save_folder_path = args.save
 epochs = args.epochs
 batch_size = args.batch
 type_ = args.type
+start_model_folder_path = args.model
 
 
 # tf.compat.v1.random.set_random_seed(7)
@@ -72,9 +74,11 @@ train_intents = intents_label_encoder.fit_transform(train_intents).astype(np.int
 val_intents = intents_label_encoder.transform(val_intents).astype(np.int32)
 intents_num = len(intents_label_encoder.classes_)
 
-
-model = JointBertModel(slots_num, intents_num, bert_model_hub_path, 
-                       num_bert_fine_tune_layers=10, is_bert=is_bert)
+if start_model_folder_path is None or start_model_folder_path == '':
+    model = JointBertModel(slots_num, intents_num, bert_model_hub_path, 
+                           num_bert_fine_tune_layers=10, is_bert=is_bert)
+else:
+    model = JointBertModel.load(start_model_folder_path)     
 
 print('training model ...')
 model.fit([train_input_ids, train_input_mask, train_segment_ids, train_valid_positions], [train_tags, train_intents],
