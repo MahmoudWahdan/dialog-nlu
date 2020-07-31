@@ -15,8 +15,9 @@ import json
 
 class JointTransformerModel(NLUModel):
 
-    def __init__(self, slots_num, intents_num, pretrained_model_name_or_path, num_bert_fine_tune_layers=10):
-        from_pt=False
+    def __init__(self, slots_num, intents_num, pretrained_model_name_or_path, 
+                 cache_dir=None, from_pt=False, num_bert_fine_tune_layers=10, 
+                 is_load=False):
         self.slots_num = slots_num
         self.intents_num = intents_num
         self.pretrained_model_name_or_path = pretrained_model_name_or_path
@@ -29,10 +30,12 @@ class JointTransformerModel(NLUModel):
                 'num_bert_fine_tune_layers': num_bert_fine_tune_layers
                 }
         
-        self.bert_model = TFBertModel.from_pretrained(pretrained_model_name_or_path, from_pt=from_pt).bert
-        
-        self.build_model()
-        self.compile_model()
+        if not is_load:
+            self.bert_model = TFBertModel.from_pretrained(pretrained_model_name_or_path, 
+                                                          cache_dir=cache_dir, from_pt=from_pt).bert
+            
+            self.build_model()
+            self.compile_model()
         
         
     def compile_model(self):
@@ -125,6 +128,8 @@ class JointTransformerModel(NLUModel):
         pretrained_model_name_or_path = model_params['pretrained_model_name_or_path']
         num_bert_fine_tune_layers = model_params['num_bert_fine_tune_layers']
             
-        new_model = JointTransformerModel(slots_num, intents_num, pretrained_model_name_or_path, num_bert_fine_tune_layers)
-        new_model.model.load_weights(os.path.join(load_folder_path,'joint_bert_model.h5'))
+        new_model = JointTransformerModel(slots_num, intents_num, pretrained_model_name_or_path, 
+                                          num_bert_fine_tune_layers, is_load=True)
+        new_model.model = tf.keras.models.load_model(os.path.join(load_folder_path,'joint_bert_model.h5'))
+#        new_model.model.load_weights(os.path.join(load_folder_path,'joint_bert_model.h5'))
         return new_model

@@ -7,6 +7,7 @@ from readers.goo_format_reader import Reader
 from vectorizers.trans_vectorizer import TransVectorizer
 from vectorizers.tags_vectorizer import TagsVectorizer
 from models.joint_trans import JointTransformerModel
+from utils import str2bool
 
 import argparse
 from sklearn.preprocessing import LabelEncoder
@@ -14,6 +15,9 @@ import numpy as np
 import os
 import pickle
 import tensorflow as tf
+
+
+
 
 
 # read command-line parameters
@@ -24,6 +28,11 @@ parser.add_argument('--save', '-s', help = 'Folder path to save the trained mode
 parser.add_argument('--epochs', '-e', help = 'Number of epochs', type = int, default = 5, required = False)
 parser.add_argument('--batch', '-bs', help = 'Batch size', type = int, default = 64, required = False)
 parser.add_argument('--model', '-m', help = 'Path to joint BERT / ALBERT NLU model for incremental training', type = str, required = False)
+parser.add_argument('--trans', '-tr', help = 'Pretrained transformer model name or path. Is optional. Either --model OR --trans should be provided'
+                    , type = str, required = False)
+parser.add_argument('--from_pt', '-pt', help = 'Whether the --trans (if provided) is from pytorch or not', 
+                    type=str2bool, nargs='?', const=True, default=False, required=False)
+parser.add_argument('--cache_dir', '-c', help = 'The cache_dir for transformers library. Is optional', type = str, required = False, default = None)
 
 
 VALID_TYPES = ['bert', 'albert']
@@ -35,12 +44,14 @@ save_folder_path = args.save
 epochs = args.epochs
 batch_size = args.batch
 start_model_folder_path = args.model
+pretrained_model_name_or_path = args.trans#"bert-base-uncased"
+from_pt = args.from_pt
+cache_dir = args.cache_dir#"D:\\transformers"
+if start_model_folder_path is None and pretrained_model_name_or_path is None:
+    raise argparse.ArgumentTypeError("Either --model OR --trans should be provided")
 
 
-pretrained_model_name_or_path = "bert-base-uncased"
 max_length = 128
-cache_dir = "D:\\transformers"
-
 
 print('read data ...')
 train_text_arr, train_tags_arr, train_intents = Reader.read(train_data_folder_path)
@@ -48,7 +59,6 @@ val_text_arr, val_tags_arr, val_intents = Reader.read(val_data_folder_path)
 
 print('vectorize data ...')
 trans_vectorizer = TransVectorizer(pretrained_model_name_or_path, max_length, cache_dir)
-#trans_vectorizer.vectorize(train_text_arr)
 train_input_ids, train_input_mask, train_segment_ids, train_valid_positions, train_sequence_lengths = trans_vectorizer.transform(train_text_arr)
 val_input_ids, val_input_mask, val_segment_ids, val_valid_positions, val_sequence_lengths = trans_vectorizer.transform(val_text_arr)
 
@@ -67,9 +77,12 @@ train_intents = intents_label_encoder.fit_transform(train_intents).astype(np.int
 val_intents = intents_label_encoder.transform(val_intents).astype(np.int32)
 intents_num = len(intents_label_encoder.classes_)
 
+
+
 if start_model_folder_path is None or start_model_folder_path == '':
-    model = JointTransformerModel(slots_num, intents_num, pretrained_model_name_or_path, 
-                           num_bert_fine_tune_layers=10)
+    model = JointTransformerModel(slots_num, intents_num, pretrained_model_name_or_path,
+                                  cache_dir=cache_dir, from_pt=from_pt, 
+                                  num_bert_fine_tune_layers=10)
 else:
     model = JointTransformerModel.load(start_model_folder_path)     
 
