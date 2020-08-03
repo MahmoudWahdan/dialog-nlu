@@ -7,33 +7,25 @@ import tensorflow as tf
 from tensorflow.python.keras.models import Model
 from tensorflow.python.keras.layers import Input, Dense, Multiply, TimeDistributed
 from models.nlu_model import NLUModel
-from transformers import TFBertModel
 import numpy as np
 import os
 import json
 
 
-class JointTransformerModel(NLUModel):
+class JointTransBertModel(NLUModel):
 
-    def __init__(self, slots_num, intents_num, pretrained_model_name_or_path, 
-                 cache_dir=None, from_pt=False, num_bert_fine_tune_layers=10, 
-                 is_load=False):
-        self.slots_num = slots_num
-        self.intents_num = intents_num
-        self.pretrained_model_name_or_path = pretrained_model_name_or_path
-        self.num_bert_fine_tune_layers = num_bert_fine_tune_layers
+    def __init__(self, config, trans_model=None, is_load=False):
+        self.slots_num = config.get('slots_num')
+        self.intents_num = config.get('intents_num')
+        self.pretrained_model_name_or_path = config.get('pretrained_model_name_or_path')
+        self.cache_dir = config.get('cache_dir', None)
+        self.from_pt = config.get('from_pt', False)
+        self.num_bert_fine_tune_layers = config.get('num_bert_fine_tune_layers', 10)
         
-        self.model_params = {
-                'slots_num': slots_num,
-                'intents_num': intents_num,
-                'pretrained_model_name_or_path': pretrained_model_name_or_path,
-                'num_bert_fine_tune_layers': num_bert_fine_tune_layers
-                }
+        self.model_params = config
         
         if not is_load:
-            self.bert_model = TFBertModel.from_pretrained(pretrained_model_name_or_path, 
-                                                          cache_dir=cache_dir, from_pt=from_pt).bert
-            
+            self.trans_model = trans_model
             self.build_model()
             self.compile_model()
         
@@ -63,7 +55,7 @@ class JointTransformerModel(NLUModel):
         inputs = bert_inputs + [in_valid_positions]
         
 
-        bert_sequence_output, bert_pooled_output = self.bert_model(bert_inputs)
+        bert_sequence_output, bert_pooled_output = self.trans_model(bert_inputs)
         
         intents_fc = Dense(self.intents_num, activation='softmax', name='intent_classifier')(bert_pooled_output)
         
@@ -114,6 +106,7 @@ class JointTransformerModel(NLUModel):
     
 
     def save(self, model_path):
+        self.model_params["class"] = self.__class__.__name__
         with open(os.path.join(model_path, 'params.json'), 'w') as json_file:
             json.dump(self.model_params, json_file)
         self.model.save(os.path.join(model_path, 'joint_bert_model.h5'))
@@ -123,13 +116,12 @@ class JointTransformerModel(NLUModel):
         with open(os.path.join(load_folder_path, 'params.json'), 'r') as json_file:
             model_params = json.load(json_file)
             
-        slots_num = model_params['slots_num'] 
-        intents_num = model_params['intents_num']
-        pretrained_model_name_or_path = model_params['pretrained_model_name_or_path']
-        num_bert_fine_tune_layers = model_params['num_bert_fine_tune_layers']
+#        slots_num = model_params['slots_num'] 
+#        intents_num = model_params['intents_num']
+#        pretrained_model_name_or_path = model_params['pretrained_model_name_or_path']
+#        num_bert_fine_tune_layers = model_params['num_bert_fine_tune_layers']
             
-        new_model = JointTransformerModel(slots_num, intents_num, pretrained_model_name_or_path, 
-                                          num_bert_fine_tune_layers, is_load=True)
+        new_model = JointTransBertModel(model_params, trans_model=None, is_load=True)
         new_model.model = tf.keras.models.load_model(os.path.join(load_folder_path,'joint_bert_model.h5'))
 #        new_model.model.load_weights(os.path.join(load_folder_path,'joint_bert_model.h5'))
         return new_model
