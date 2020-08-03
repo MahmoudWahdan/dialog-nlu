@@ -22,6 +22,8 @@ class TransVectorizer:
         self.cls_token = self.tokenizer.cls_token
         if self.tokenizer_type == 'BertTokenizer':
             self.not_valid_start = '##'
+        elif self.tokenizer_type == 'DistilBertTokenizer':
+            self.not_valid_start = '##'
         else:
             raise Exception('% is not supported tokenizer' % self.tokenizer_type)
             
