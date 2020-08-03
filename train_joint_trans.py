@@ -6,7 +6,7 @@
 from readers.goo_format_reader import Reader
 from vectorizers.trans_vectorizer import TransVectorizer
 from vectorizers.tags_vectorizer import TagsVectorizer
-from models.joint_trans import JointTransformerModel
+from models.trans_auto_model import create_joint_trans_model
 from utils import str2bool
 
 import argparse
@@ -80,9 +80,15 @@ intents_num = len(intents_label_encoder.classes_)
 
 
 if start_model_folder_path is None or start_model_folder_path == '':
-    model = JointTransformerModel(slots_num, intents_num, pretrained_model_name_or_path,
-                                  cache_dir=cache_dir, from_pt=from_pt, 
-                                  num_bert_fine_tune_layers=10)
+    config = {
+        "slots_num": slots_num,
+        "intents_num": intents_num,
+        "pretrained_model_name_or_path": pretrained_model_name_or_path,
+        "cache_dir": cache_dir,
+        "from_pt": from_pt,
+        "num_bert_fine_tune_layers": 10
+    }
+    model = create_joint_trans_model(config)
 else:
     model = JointTransformerModel.load(start_model_folder_path)     
 

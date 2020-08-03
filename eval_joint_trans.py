@@ -5,7 +5,7 @@
 
 from readers.goo_format_reader import Reader
 from vectorizers.trans_vectorizer import TransVectorizer
-from models.joint_trans import JointTransformerModel
+from models.trans_auto_model import load_joint_trans_model
 from utils import flatten
 
 import argparse
@@ -49,7 +49,8 @@ with open(os.path.join(load_folder_path, 'intents_label_encoder.pkl'), 'rb') as 
     intents_label_encoder = pickle.load(handle)
     intents_num = len(intents_label_encoder.classes_)
     
-model = JointTransformerModel.load(load_folder_path)
+
+model = load_joint_trans_model(load_folder_path)
 
 
 data_text_arr, data_tags_arr, data_intents = Reader.read(data_folder_path)
