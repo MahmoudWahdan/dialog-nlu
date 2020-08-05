@@ -16,7 +16,7 @@ from sklearn import metrics
 
 
 # read command-line parameters
-parser = argparse.ArgumentParser('Evaluating the Joint BERT / ALBERT NLU model')
+parser = argparse.ArgumentParser('Evaluating the Joint Transformer NLU model')
 parser.add_argument('--model', '-m', help = 'Path to joint BERT / ALBERT NLU model', type = str, required = True)
 parser.add_argument('--data', '-d', help = 'Path to data in Goo et al format', type = str, required = True)
 parser.add_argument('--batch', '-bs', help = 'Batch size', type = int, default = 128, required = False)

@@ -21,7 +21,7 @@ import tensorflow as tf
 
 
 # read command-line parameters
-parser = argparse.ArgumentParser('Training the Joint BERT NLU model')
+parser = argparse.ArgumentParser('Training the Joint Transformer NLU model')
 parser.add_argument('--train', '-t', help = 'Path to training data in Goo et al format', type = str, required = True)
 parser.add_argument('--val', '-v', help = 'Path to validation data in Goo et al format', type = str, required = True)
 parser.add_argument('--save', '-s', help = 'Folder path to save the trained model', type = str, required = True)
