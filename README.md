@@ -95,6 +95,8 @@ Supported Models Architecture:
 |---|---|
 |TFBertModel|```bert-base-uncased```|
 |TFDistilBertModel|```distilbert-base-uncased```|
+|TFAlbertModel|```albert-base-v1``` or ```albert-base-v2```|
+|TFRobertaModel|```roberta-base``` or ```distilroberta-base```|
 And more models integration to come
 
 
@@ -127,7 +129,7 @@ python train_joint_trans.py --train=data/snips/train --val=data/snips/valid --sa
 ##### Required Parameters:
 |Argument|Description|Is Required|Default|
 |---|---|---|---|
-|```--model``` or ```-m```|Path to joint BERT / ALBERT NLU model.|Yes||
+|```--model``` or ```-m```|Path to joint Transformer NLU model.|Yes||
 |```--data``` or ```-d```|Path to data in Goo et al format.|Yes||
 |```--batch``` or ```-bs```|Batch size.|No|128|
 
