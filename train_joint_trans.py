@@ -6,7 +6,7 @@
 from readers.goo_format_reader import Reader
 from vectorizers.trans_vectorizer import TransVectorizer
 from vectorizers.tags_vectorizer import TagsVectorizer
-from models.trans_auto_model import create_joint_trans_model
+from models.trans_auto_model import create_joint_trans_model, load_joint_trans_model
 from utils import str2bool
 
 import argparse
@@ -17,9 +17,6 @@ import pickle
 import tensorflow as tf
 
 
-
-
-
 # read command-line parameters
 parser = argparse.ArgumentParser('Training the Joint Transformer NLU model')
 parser.add_argument('--train', '-t', help = 'Path to training data in Goo et al format', type = str, required = True)
@@ -27,7 +24,7 @@ parser.add_argument('--val', '-v', help = 'Path to validation data in Goo et al 
 parser.add_argument('--save', '-s', help = 'Folder path to save the trained model', type = str, required = True)
 parser.add_argument('--epochs', '-e', help = 'Number of epochs', type = int, default = 5, required = False)
 parser.add_argument('--batch', '-bs', help = 'Batch size', type = int, default = 64, required = False)
-parser.add_argument('--model', '-m', help = 'Path to joint BERT / ALBERT NLU model for incremental training', type = str, required = False)
+parser.add_argument('--model', '-m', help = 'Path to joint trans NLU model for incremental training', type = str, required = False)
 parser.add_argument('--trans', '-tr', help = 'Pretrained transformer model name or path. Is optional. Either --model OR --trans should be provided'
                     , type = str, required = False)
 parser.add_argument('--from_pt', '-pt', help = 'Whether the --trans (if provided) is from pytorch or not', 
@@ -78,7 +75,6 @@ val_intents = intents_label_encoder.transform(val_intents).astype(np.int32)
 intents_num = len(intents_label_encoder.classes_)
 
 
-
 if start_model_folder_path is None or start_model_folder_path == '':
     config = {
         "slots_num": slots_num,
@@ -90,13 +86,12 @@ if start_model_folder_path is None or start_model_folder_path == '':
     }
     model = create_joint_trans_model(config)
 else:
-    model = JointTransformerModel.load(start_model_folder_path)     
+    model = load_joint_trans_model(start_model_folder_path)     
 
 print('training model ...')
 model.fit([train_input_ids, train_input_mask, train_segment_ids, train_valid_positions], [train_tags, train_intents],
           validation_data=([val_input_ids, val_input_mask, val_segment_ids, val_valid_positions], [val_tags, val_intents]),
           epochs=epochs, batch_size=batch_size)
-
 
 ### saving
 print('Saving ..')
