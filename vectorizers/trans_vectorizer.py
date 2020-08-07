@@ -24,8 +24,14 @@ class TransVectorizer:
             self.not_valid_start = '##'
         elif self.tokenizer_type == 'DistilBertTokenizer':
             self.not_valid_start = '##'
+        elif self.tokenizer_type == 'AlbertTokenizer':
+            self.valid_start = '▁'
+        elif self.tokenizer_type == 'XLNetTokenizer':
+            self.valid_start = '▁'
+        elif self.tokenizer_type == 'RobertaTokenizer':
+            self.valid_start = 'Ġ'
         else:
-            raise Exception('% is not supported tokenizer' % self.tokenizer_type)
+            raise Exception('%s is not supported tokenizer' % self.tokenizer_type)
             
             
 #    def tokenize(self, text: str):
