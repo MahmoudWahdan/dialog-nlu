@@ -29,13 +29,8 @@ load_folder_path = args.model
 data_folder_path = args.data
 batch_size = args.batch
 
+max_length = 128 # not supported yet   
 
-pretrained_model_name_or_path = "bert-base-uncased"
-max_length = 128 # not supported yet
-cache_dir = "D:\\transformers"
-
-    
-trans_vectorizer = TransVectorizer(pretrained_model_name_or_path, max_length, cache_dir)
 
 # loading models
 print('Loading models ...')
@@ -49,9 +44,13 @@ with open(os.path.join(load_folder_path, 'intents_label_encoder.pkl'), 'rb') as 
     intents_label_encoder = pickle.load(handle)
     intents_num = len(intents_label_encoder.classes_)
     
-
+# loading joint trans model
 model = load_joint_trans_model(load_folder_path)
 
+# loading trans vectorizer
+pretrained_model_name_or_path = model.model_params['pretrained_model_name_or_path']
+cache_dir = model.model_params['cache_dir']
+trans_vectorizer = TransVectorizer(pretrained_model_name_or_path, max_length, cache_dir)
 
 data_text_arr, data_tags_arr, data_intents = Reader.read(data_folder_path)
 data_input_ids, data_input_mask, data_segment_ids, data_valid_positions, data_sequence_lengths = trans_vectorizer.transform(data_text_arr)
