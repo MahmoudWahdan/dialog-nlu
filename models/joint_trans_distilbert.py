@@ -7,7 +7,7 @@ Created on Mon Aug  3 09:20:53 2020
     
 import tensorflow as tf
 from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.layers import Input, Dense, Multiply, TimeDistributed, Lambda
+from tensorflow.python.keras.layers import Input, Dense, Multiply, TimeDistributed, Lambda, GlobalAveragePooling1D
 from models.base_joint_trans import BaseJointTransformerModel
 import numpy as np
 
@@ -26,7 +26,8 @@ class JointTransDistilBertModel(BaseJointTransformerModel):
         inputs = bert_inputs + [in_valid_positions]
         
         bert_sequence_output = self.trans_model(bert_inputs)[0]
-        bert_pooled_output = Lambda(function=lambda x: tf.keras.backend.mean(x, axis=1))(bert_sequence_output)
+#        bert_pooled_output = Lambda(function=lambda x: tf.keras.backend.mean(x, axis=1))(bert_sequence_output)
+        bert_pooled_output = GlobalAveragePooling1D()(bert_sequence_output)
         
         intents_fc = Dense(self.intents_num, activation='softmax', name='intent_classifier')(bert_pooled_output)
         
