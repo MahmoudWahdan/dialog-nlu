@@ -1,17 +1,23 @@
 # Dialog System NLU
 Tensorflow and Keras Implementation of the state of the art researches in Dialog System NLU. 
 Tested on Tensorflow version 2.x
+Recently, using Huggingface Transformers library for better models coverage and other languages support.
 
 You can still access the old version (TF 1.15.0) on TF_1 branch
 
 
 ## Implemented Papers
-
+### NLU Papers
 - [BERT for Joint Intent Classification and Slot Filling](https://arxiv.org/abs/1902.10909)
-    
+### Model Compression Papers
+- [Poor Man’s BERT: Smaller and Faster Transformer Models](https://arxiv.org/abs/2004.03844)
 ### BERT / ALBERT for Joint Intent Classification and Slot Filling
 
 ![Joint BERT](img/joint_bert.PNG?)
+
+### Poor Man’s BERT: Smaller and Faster Transformer Models
+
+![Layer-dropping Strategies](img/Layer_dropping_Strategies.PNG)
 
 #### Supported data format:
 - Data format as in the paper `Slot-Gated Modeling for Joint Slot Filling and Intent Prediction` (Goo et al):
@@ -91,12 +97,12 @@ python eval_joint_bert_crf.py --model=saved_models/joint_albert_crf_model --data
 [Huggingface Transformers](https://github.com/huggingface/transformers) has a lot of transformers-based models. The idea behind the integration is to be able to support more architectures as well as more languages.
 
 Supported Models Architecture:
-|Model|Pretrained Model Example|
-|---|---|
-|TFBertModel|```bert-base-uncased```|
-|TFDistilBertModel|```distilbert-base-uncased```|
-|TFAlbertModel|```albert-base-v1``` or ```albert-base-v2```|
-|TFRobertaModel|```roberta-base``` or ```distilroberta-base```|
+|Model|Pretrained Model Example|Layer Prunning Support|
+|---|---|---|
+|TFBertModel|```bert-base-uncased```|Yes|
+|TFDistilBertModel|```distilbert-base-uncased```|Yes|
+|TFAlbertModel|```albert-base-v1``` or ```albert-base-v2```|Not yet|
+|TFRobertaModel|```roberta-base``` or ```distilroberta-base```|Not yet|
 And more models integration to come
 
 

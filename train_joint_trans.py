@@ -82,7 +82,12 @@ if start_model_folder_path is None or start_model_folder_path == '':
         "pretrained_model_name_or_path": pretrained_model_name_or_path,
         "cache_dir": cache_dir,
         "from_pt": from_pt,
-        "num_bert_fine_tune_layers": 10
+        "num_bert_fine_tune_layers": 10,
+        
+#        "layer_pruning": {
+#            "strategy": "top",
+#            "k": 2#6#2
+#        }
     }
     model = create_joint_trans_model(config)
 else:
