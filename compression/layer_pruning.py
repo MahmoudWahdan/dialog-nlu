@@ -62,16 +62,16 @@ def rename_layers_in_strategy(model, strategy, original_num_layers, k, layers_in
     if strategy == 'top':
         # No need to rename, because they are already in order.
         return model
-    if strategy == 'buttom':
+    elif strategy == 'buttom':
         indexes = list(range(k, original_num_layers))
-    if strategy == 'symmetric':
+    elif strategy == 'symmetric':
         lst = list(range(original_num_layers))
         idx = int((original_num_layers - k) / 2)
         indexes = lst[:idx] + lst[-idx:]
-    if strategy == 'custom':
+    elif strategy == 'custom':
         s = set(layers_indexes)
         indexes = [i for i in range(original_num_layers) if i not in s]
-    if strategy == 'alternate':
+    elif strategy == 'alternate':
         lst = []
         pruned = []
         for i in reversed(range(original_num_layers)):
