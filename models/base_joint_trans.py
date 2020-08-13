@@ -11,6 +11,8 @@ from models.nlu_model import NLUModel
 import numpy as np
 import os
 import json
+from .callbacks import F1Metrics
+
 
 
 class BaseJointTransformerModel(NLUModel):
@@ -22,6 +24,8 @@ class BaseJointTransformerModel(NLUModel):
         self.cache_dir = config.get('cache_dir', None)
         self.from_pt = config.get('from_pt', False)
         self.num_bert_fine_tune_layers = config.get('num_bert_fine_tune_layers', 10)
+        self.intent_loss_weight = config.get('intent_loss_weight', 1.0)
+        self.slots_loss_weight = config.get('slots_loss_weight', 3.0)
         
         self.model_params = config
         
@@ -41,7 +45,7 @@ class BaseJointTransformerModel(NLUModel):
         	'slots_tagger': 'sparse_categorical_crossentropy',
         	'intent_classifier': 'sparse_categorical_crossentropy',
         }
-        loss_weights = {'slots_tagger': 3.0, 'intent_classifier': 1.0}
+        loss_weights = {'slots_tagger': self.slots_loss_weight, 'intent_classifier': self.intent_loss_weight}
         metrics = {'intent_classifier': 'acc'}
         self.model.compile(optimizer=optimizer, loss=losses, loss_weights=loss_weights, metrics=metrics)
         self.model.summary()
@@ -59,7 +63,8 @@ class BaseJointTransformerModel(NLUModel):
         raise NotImplementedError()
 
         
-    def fit(self, X, Y, validation_data=None, epochs=5, batch_size=32):
+    def fit(self, X, Y, validation_data=None, epochs=5, batch_size=32,
+            id2label=None):
         """
         X: batch of [input_ids, input_mask, segment_ids, valid_positions]
         """
@@ -68,8 +73,10 @@ class BaseJointTransformerModel(NLUModel):
             X_val, Y_val = validation_data
             validation_data = ((X_val[0], X_val[1], X_val[2], self.prepare_valid_positions(X_val[3])), Y_val)
         
+        callbacks = [F1Metrics(id2label, validation_data=validation_data)]
         history = self.model.fit(X, Y, validation_data=validation_data, 
-                                 epochs=epochs, batch_size=batch_size)
+                                 epochs=epochs, batch_size=batch_size,
+                                 callbacks=callbacks)
         self.visualize_metric(history.history, 'slots_tagger_loss')
         self.visualize_metric(history.history, 'intent_classifier_loss')
         self.visualize_metric(history.history, 'loss')

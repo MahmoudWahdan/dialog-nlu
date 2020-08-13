@@ -132,6 +132,7 @@ python train_joint_trans.py --train=data/snips/train --val=data/snips/valid --sa
 ```
 
 #### Evaluating the Joint Transformer NLU model:
+We make use of [seqeval library](https://github.com/chakki-works/seqeval)
 ##### Required Parameters:
 |Argument|Description|Is Required|Default|
 |---|---|---|---|

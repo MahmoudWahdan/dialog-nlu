@@ -67,6 +67,8 @@ train_tags = tags_vectorizer.transform(train_tags_arr, train_valid_positions)
 val_tags = tags_vectorizer.transform(val_tags_arr, val_valid_positions)
 slots_num = len(tags_vectorizer.label_encoder.classes_)
 
+id2label = {i:v for i, v in enumerate(tags_vectorizer.label_encoder.classes_)}
+
 
 print('encode labels ...')
 intents_label_encoder = LabelEncoder()
@@ -83,10 +85,16 @@ if start_model_folder_path is None or start_model_folder_path == '':
         "cache_dir": cache_dir,
         "from_pt": from_pt,
         "num_bert_fine_tune_layers": 10,
+        "intent_loss_weight": 1.0,#0.2,
+        "slots_loss_weight": 3.0,#2.0,
         
 #        "layer_pruning": {
 #            "strategy": "top",
 #            "k": 2#6#2
+#        }
+#        "layer_pruning": {
+#            "strategy": "custom",
+#            "layers_indexes": [2, 3]
 #        }
     }
     model = create_joint_trans_model(config)
@@ -96,7 +104,7 @@ else:
 print('training model ...')
 model.fit([train_input_ids, train_input_mask, train_segment_ids, train_valid_positions], [train_tags, train_intents],
           validation_data=([val_input_ids, val_input_mask, val_segment_ids, val_valid_positions], [val_tags, val_intents]),
-          epochs=epochs, batch_size=batch_size)
+          epochs=epochs, batch_size=batch_size, id2label=id2label)
 
 ### saving
 print('Saving ..')
