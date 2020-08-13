@@ -11,19 +11,22 @@ Paper: Poor Man’s BERT: Smaller and Faster Transformer Models
 
 NUM_LAYERS_CONFIG_PARAMETER = {
     'BertConfig': 'num_hidden_layers',
-    'DistilBertConfig': 'n_layers'
+    'DistilBertConfig': 'n_layers',
+    'RobertaConfig': 'num_hidden_layers'
 }
 
 
 MODEL_ENCODER_NAME_FORMAT = {
     'TFBertModel': 'layer_._{}',
-    'TFDistilBertModel': 'layer_._{}'
+    'TFDistilBertModel': 'layer_._{}',
+    'TFRobertaModel': 'layer_._{}'
 }
 
 
 MODEL_Transformer_PART = {
     'TFBertModel': 'bert.encoder',
-    'TFDistilBertModel': 'distilbert.transformer'
+    'TFDistilBertModel': 'distilbert.transformer',
+    'TFRobertaModel': 'roberta.encoder'
 }
 
 

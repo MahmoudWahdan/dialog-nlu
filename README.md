@@ -102,7 +102,7 @@ Supported Models Architecture:
 |TFBertModel|```bert-base-uncased```|Yes|
 |TFDistilBertModel|```distilbert-base-uncased```|Yes|
 |TFAlbertModel|```albert-base-v1``` or ```albert-base-v2```|Not yet|
-|TFRobertaModel|```roberta-base``` or ```distilroberta-base```|Not yet|
+|TFRobertaModel|```roberta-base``` or ```distilroberta-base```|Yes|
 And more models integration to come
 
 
@@ -132,7 +132,7 @@ python train_joint_trans.py --train=data/snips/train --val=data/snips/valid --sa
 ```
 
 #### Evaluating the Joint Transformer NLU model:
-We make use of [seqeval library](https://github.com/chakki-works/seqeval)
+We make use of [seqeval library](https://github.com/chakki-works/seqeval) for computing f1-score per tag level not per token level.
 ##### Required Parameters:
 |Argument|Description|Is Required|Default|
 |---|---|---|---|
