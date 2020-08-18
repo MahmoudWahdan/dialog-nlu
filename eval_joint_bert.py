@@ -13,6 +13,7 @@ import os
 import pickle
 import tensorflow as tf
 from sklearn import metrics
+from seqeval.metrics import classification_report, f1_score
 
 
 # read command-line parameters
@@ -68,15 +69,21 @@ def get_results(input_ids, input_mask, segment_ids, valid_positions, sequence_le
             tags_vectorizer, intents_label_encoder, remove_start_end=True)
     gold_tags = [x.split() for x in tags_arr]
     #print(metrics.classification_report(flatten(gold_tags), flatten(predicted_tags), digits=3))
-    f1_score = metrics.f1_score(flatten(gold_tags), flatten(predicted_tags), average='micro')
+    token_f1_score = metrics.f1_score(flatten(gold_tags), flatten(predicted_tags), average='micro')
     acc = metrics.accuracy_score(intents, predicted_intents)
-    return f1_score, acc
+        
+    report = classification_report(gold_tags, predicted_tags, digits=4)
+    tag_f1_score = f1_score(gold_tags, predicted_tags, average='micro')
+    
+    return token_f1_score, tag_f1_score, report, acc
 
 print('==== Evaluation ====')
-f1_score, acc = get_results(data_input_ids, data_input_mask, data_segment_ids, data_valid_positions,
+token_f1_score, tag_f1_score, report, acc = get_results(data_input_ids, data_input_mask, data_segment_ids, data_valid_positions,
                             data_sequence_lengths, 
                             data_tags_arr, data_intents, tags_vectorizer, intents_label_encoder)
-print('Slot f1_score = %f' % f1_score)
+print('Slot Classification Report:', report)
+print('Slot token f1_score = %f' % token_f1_score)
+print('Slot tag f1_score = %f' % tag_f1_score)
 print('Intent accuracy = %f' % acc)
 
 tf.compat.v1.reset_default_graph()
