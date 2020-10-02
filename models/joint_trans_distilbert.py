@@ -9,6 +9,7 @@ import tensorflow as tf
 from tensorflow.python.keras.models import Model
 from tensorflow.python.keras.layers import Input, Dense, Multiply, TimeDistributed, Lambda, GlobalAveragePooling1D
 from models.base_joint_trans import BaseJointTransformerModel
+from .callbacks import F1Metrics
 import numpy as np
 
 
@@ -37,7 +38,7 @@ class JointTransDistilBertModel(BaseJointTransformerModel):
         self.model = Model(inputs=inputs, outputs=[slots_output, intents_fc])
 
         
-    def fit(self, X, Y, validation_data=None, epochs=5, batch_size=32):
+    def fit(self, X, Y, validation_data=None, epochs=5, batch_size=32, id2label=None):
         """
         X: batch of [input_ids, input_mask, segment_ids, valid_positions]
         """
@@ -46,8 +47,10 @@ class JointTransDistilBertModel(BaseJointTransformerModel):
             X_val, Y_val = validation_data
             validation_data = ((X_val[0], X_val[1], self.prepare_valid_positions(X_val[3])), Y_val)
         
+        callbacks = [F1Metrics(id2label, validation_data=validation_data)]
         history = self.model.fit(X, Y, validation_data=validation_data, 
-                                 epochs=epochs, batch_size=batch_size)
+                                 epochs=epochs, batch_size=batch_size,
+                                 callbacks=callbacks)
         self.visualize_metric(history.history, 'slots_tagger_loss')
         self.visualize_metric(history.history, 'intent_classifier_loss')
         self.visualize_metric(history.history, 'loss')
