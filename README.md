@@ -153,16 +153,21 @@ python eval_joint_trans.py --model=saved_models/joint_distilbert_model --data=da
 
 #### Running a basic REST service for the Joint BERT / ALBERT NLU model:
 ##### Required Parameters:
-- ```--model``` or ```-m``` Path to joint BERT / ALBERT NLU model.
+- ```--model``` or ```-m``` Path to joint BERT , ALBERT , or Trans NLU model.
 ##### Optional Parameters:
-- ```--type``` or ```-tp``` to choose between `bert` and `albert`. Default is `bert`
+- ```--type``` or ```-tp``` to choose between `bert` and `albert` tensorflow-hub based models, and used `trans` for HuggingFace transformers based models. Default is `bert`
 
 
 ```
 python bert_nlu_basic_api.py --model=saved_models/joint_albert_model --type=albert
 ```
 
-##### Sample request:
+```
+python bert_nlu_basic_api.py --model=saved_models/joint_distilbert_model --type=trans
+```
+
+##### Sample request: 
+- Method `/predict`
 - POST
 - Payload: 
 ```
