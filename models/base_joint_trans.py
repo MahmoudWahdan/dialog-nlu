@@ -7,7 +7,7 @@ Created on Mon Aug  3 09:22:32 2020
 
 
 import tensorflow as tf
-from models.nlu_model import NLUModel
+from .nlu_model import NLUModel
 import numpy as np
 import os
 import json
@@ -111,11 +111,13 @@ class BaseJointTransformerModel(NLUModel):
             json.dump(self.model_params, json_file)
         self.model.save(os.path.join(model_path, trans_model_name))
         
-        
+
+    @staticmethod    
     def load_model_by_class(klazz, load_folder_path, trans_model_name):
         with open(os.path.join(load_folder_path, 'params.json'), 'r') as json_file:
             model_params = json.load(json_file)
                         
         new_model = klazz(model_params, trans_model=None, is_load=True)
         new_model.model = tf.keras.models.load_model(os.path.join(load_folder_path, trans_model_name))
+        new_model.compile_model()
         return new_model

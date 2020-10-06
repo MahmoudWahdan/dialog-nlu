@@ -54,15 +54,29 @@ print('read data ...')
 train_text_arr, train_tags_arr, train_intents = Reader.read(train_data_folder_path)
 val_text_arr, val_tags_arr, val_intents = Reader.read(val_data_folder_path)
 
-print('vectorize data ...')
 trans_vectorizer = TransVectorizer(pretrained_model_name_or_path, max_length, cache_dir)
+if start_model_folder_path is None or start_model_folder_path == '':
+    print("Creating vectorizers ...")
+    tags_vectorizer = TagsVectorizer()
+    tags_vectorizer.fit(train_tags_arr)
+    intents_label_encoder = LabelEncoder()
+    intents_label_encoder.fit(train_intents)
+else:
+    print("Loading vectorizers ...")
+    with open(os.path.join(start_model_folder_path, 'tags_vectorizer.pkl'), 'rb') as handle:
+        tags_vectorizer = pickle.load(handle)
+        slots_num = len(tags_vectorizer.label_encoder.classes_)
+    with open(os.path.join(start_model_folder_path, 'intents_label_encoder.pkl'), 'rb') as handle:
+        intents_label_encoder = pickle.load(handle)
+        intents_num = len(intents_label_encoder.classes_)
+
+
+print('vectorize data ...')
 train_input_ids, train_input_mask, train_segment_ids, train_valid_positions, train_sequence_lengths = trans_vectorizer.transform(train_text_arr)
 val_input_ids, val_input_mask, val_segment_ids, val_valid_positions, val_sequence_lengths = trans_vectorizer.transform(val_text_arr)
 
 
 print('vectorize tags ...')
-tags_vectorizer = TagsVectorizer()
-tags_vectorizer.fit(train_tags_arr)
 train_tags = tags_vectorizer.transform(train_tags_arr, train_valid_positions)
 val_tags = tags_vectorizer.transform(val_tags_arr, val_valid_positions)
 slots_num = len(tags_vectorizer.label_encoder.classes_)
@@ -71,8 +85,7 @@ id2label = {i:v for i, v in enumerate(tags_vectorizer.label_encoder.classes_)}
 
 
 print('encode labels ...')
-intents_label_encoder = LabelEncoder()
-train_intents = intents_label_encoder.fit_transform(train_intents).astype(np.int32)
+train_intents = intents_label_encoder.transform(train_intents).astype(np.int32)
 val_intents = intents_label_encoder.transform(val_intents).astype(np.int32)
 intents_num = len(intents_label_encoder.classes_)
 
