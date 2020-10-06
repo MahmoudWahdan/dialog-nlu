@@ -77,5 +77,6 @@ class JointTransDistilBertModel(BaseJointTransformerModel):
         self.save_to_path(model_path, 'joint_distilbert_model.h5')
     
         
+    @staticmethod
     def load(load_folder_path):
         return BaseJointTransformerModel.load_model_by_class(JointTransDistilBertModel, load_folder_path, 'joint_distilbert_model.h5')
