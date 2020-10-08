@@ -31,6 +31,7 @@ class NLUModel:
     def save(self, model_path):
         self.model.save(model_path)
         
+    @staticmethod
     def load(model_path, custom_objects=None):
         new_model = NLUModel()
         new_model.model = load_model(model_path, custom_objects=custom_objects)

@@ -4,9 +4,9 @@
 """
 
 import tensorflow as tf
-from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.layers import Input, Dense, Multiply, TimeDistributed
-from models.nlu_model import NLUModel
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Dense, Multiply, TimeDistributed
+from .nlu_model import NLUModel
 import tensorflow_hub as hub
 import numpy as np
 import os
@@ -120,6 +120,7 @@ class JointBertModel(NLUModel):
         self.model.save(os.path.join(model_path, 'joint_bert_model.h5'))
         
         
+    @staticmethod
     def load(load_folder_path):
         with open(os.path.join(load_folder_path, 'params.json'), 'r') as json_file:
             model_params = json.load(json_file)

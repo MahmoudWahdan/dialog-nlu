@@ -11,6 +11,7 @@ class Reader:
     def __init__(self):
         pass
     
+    @staticmethod
     def read(dataset_folder_path):
         labels = None
         text_arr = None

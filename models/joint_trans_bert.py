@@ -4,9 +4,9 @@
 """
 
 import tensorflow as tf
-from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.layers import Input, Dense, Multiply, TimeDistributed
-from models.base_joint_trans import BaseJointTransformerModel
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Dense, Multiply, TimeDistributed
+from .base_joint_trans import BaseJointTransformerModel
 
 
 class JointTransBertModel(BaseJointTransformerModel):
@@ -37,6 +37,7 @@ class JointTransBertModel(BaseJointTransformerModel):
     def save(self, model_path):
         self.save_to_path(model_path, 'joint_bert_model.h5')
     
-        
+
+    @staticmethod    
     def load(load_folder_path):
         return BaseJointTransformerModel.load_model_by_class(BaseJointTransformerModel, load_folder_path, 'joint_bert_model.h5')

@@ -4,10 +4,10 @@
 """
 
 import tensorflow as tf
-from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.layers import Input, Dense
-from models.joint_bert import JointBertModel
-from layers.crf_layer import CRFLayer
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Dense
+from .joint_bert import JointBertModel
+from ..layers.crf_layer import CRFLayer
 import tensorflow_hub as hub
 import numpy as np
 import os
@@ -99,7 +99,8 @@ class JointBertCRFModel(JointBertModel):
             json.dump(self.model_params, json_file)
         self.model.save(os.path.join(model_path, 'joint_bert_crf_model.h5'))
         
-        
+
+    @staticmethod    
     def load(load_folder_path):
         with open(os.path.join(load_folder_path, 'params.json'), 'r') as json_file:
             model_params = json.load(json_file)

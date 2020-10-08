@@ -6,12 +6,12 @@ Created on Mon Aug  3 09:19:55 2020
 """
 
 from transformers import TFAutoModel
-from models.joint_trans_bert import JointTransBertModel
-from models.joint_trans_distilbert import JointTransDistilBertModel
-from models.joint_trans_albert import JointTransAlbertModel
-#from models.joint_trans_xlnet import JointTransXlnetModel
-from models.joint_trans_roberta import JointTransRobertaModel
-from compression.commons import from_pretrained
+from .joint_trans_bert import JointTransBertModel
+from .joint_trans_distilbert import JointTransDistilBertModel
+from .joint_trans_albert import JointTransAlbertModel
+#from .joint_trans_xlnet import JointTransXlnetModel
+from .joint_trans_roberta import JointTransRobertaModel
+from ..compression.commons import from_pretrained
 import json
 import os
 
