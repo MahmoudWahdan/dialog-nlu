@@ -27,7 +27,7 @@ def initialize(type_, load_folder_path):
     global model
     global bert_vectorizer
     if type_ in {'bert', 'albert'}:
-        if type_ == 'albert':
+        if type_ == 'bert':
             bert_model_hub_path = "https://tfhub.dev/tensorflow/bert_en_uncased_L-12_H-768_A-12/1"
             is_bert = True
         else:
