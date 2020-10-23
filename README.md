@@ -1,9 +1,7 @@
 # Dialog System NLU
-Tensorflow and Keras Implementation of the state of the art researches in Dialog System NLU. 
-Tested on Tensorflow version 2.x
-Recently, using Huggingface Transformers library for better models coverage and other languages support.
+Dialog NLU library that contains Tensorflow and Keras Implementation of the state of the art researches in Dialog System NLU. 
 
-You can still access the old version (TF 1.15.0) on TF_1 branch
+It is built on Tensorflow 2 and Huggingface Transformers library for better models coverage and other languages support.
 
 
 ## Implemented Papers
@@ -31,67 +29,6 @@ You can still access the old version (TF 1.15.0) on TF_1 branch
 	- The training, development and test sets contain 13,084, 700 and 700 utterances, respectively. 
 	- There are 72 slot labels and 7 intent types for the training set.
 
-#### Training the model with SICK-like data:
-4 models implemented `joint_bert` and `joint_bert_crf` each supports `bert` and `albert`
-##### Required Parameters:
-- ```--train``` or ```-t``` Path to training data in Goo et al format.
-- ```--val``` or ```-v``` Path to validation data in Goo et al format.
-- ```--save``` or ```-s``` Folder path to save the trained model.
-##### Optional Parameters:
-- ```--epochs``` or ```-e``` Number of epochs.
-- ```--batch``` or ```-bs``` Batch size.
-- ```--type``` or ```-tp``` to choose between `bert` and `albert`. Default is `bert`
-- ```--model``` or ```-m``` Path to joint BERT / ALBERT NLU model for incremental training.
-
-```
-python train_joint_bert.py --train=data/snips/train --val=data/snips/valid --save=saved_models/joint_bert_model --epochs=5 --batch=64 --type=bert
-```
-
-```
-python train_joint_bert.py --train=data/snips/train --val=data/snips/valid --save=saved_models/joint_albert_model --epochs=5 --batch=64 --type=albert
-```
-
-```
-python train_joint_bert_crf.py --train=data/snips/train --val=data/snips/valid --save=saved_models/joint_bert_crf_model --epochs=5 --batch=32 --type=bert
-```
-
-```
-python train_joint_bert_crf.py --train=data/snips/train --val=data/snips/valid --save=saved_models/joint_albert_crf_model --epochs=5 --batch=32 --type=albert
-```
-
-**Example to do incremental training:**
-
-```
-python train_joint_bert.py --train=data/snips/train --val=data/snips/valid --save=saved_models/joint_albert_model2 --epochs=5 --batch=64 --type=albert --model=saved_models/joint_albert_model
-```
-
-
-#### Evaluating the Joint BERT / ALBERT NLU model:
-##### Required Parameters:
-- ```--model``` or ```-m``` Path to joint BERT / ALBERT NLU model.
-- ```--data``` or ```-d``` Path to data in Goo et al format.
-##### Optional Parameters:
-- ```--batch``` or ```-bs``` Batch size.
-- ```--type``` or ```-tp``` to choose between `bert` and `albert`. Default is `bert`
-
-
-```
-python eval_joint_bert.py --model=saved_models/joint_bert_model --data=data/snips/test --batch=128 --type=bert
-```
-
-```
-python eval_joint_bert.py --model=saved_models/joint_albert_model --data=data/snips/test --batch=128 --type=albert
-```
-
-```
-python eval_joint_bert_crf.py --model=saved_models/joint_bert_crf_model --data=data/snips/test --batch=128 --type=bert
-```
-
-```
-python eval_joint_bert_crf.py --model=saved_models/joint_albert_crf_model --data=data/snips/test --batch=128 --type=albert
-```
-
-
 
 ### Integration with Huggingface Transformers library
 [Huggingface Transformers](https://github.com/huggingface/transformers) has a lot of transformers-based models. The idea behind the integration is to be able to support more architectures as well as more languages.
@@ -106,93 +43,97 @@ Supported Models Architecture:
 And more models integration to come
 
 
-#### Training a joint Transformer model with SICK-like data:
-
-##### Parameters:
-|Argument|Description|Is Required|Default|
-|---|---|---|---|
-|```--train``` or ```-t```|Path to training data in Goo et al format.|Yes||
-|```--val``` or ```-v```|Path to validation data in Goo et al format.|Yes||
-|```--save``` or ```-s```|Folder path to save the trained model.|Yes||
-|```--epochs``` or ```-e```|Number of epochs.|No|5|
-|```--batch``` or ```-bs```|Batch size.|No|64|
-|```--model``` or ```-m```|Path to joint trans NLU model for incremental training.|No||
-|```--trans``` or ```tr```|Pretrained transformer model name or path. Is optional. Either --model OR --trans should be provided|No||
-|```--from_pt``` or ```-pt```|Whether the --trans (if provided) is from pytorch or not|No|False|
-|```--cache_dir``` or ```-c```|The cache_dir for transformers library. Is optional|No||
-
-Using Transformers Bert example:
-``` bash
-python train_joint_trans.py --train=data/snips/train --val=data/snips/valid --save=saved_models/joint_trans_model --epochs=3 --batch=64 --cache_dir=transformers_cache_dir  --trans=bert-base-uncased --from_pt=false
+## Installation
+You may choose to create python environment before installation.
+WARNING: `tf-nightly` is one of the library dependencies, becuase converting the model to tflite needs feature that exist only in `tensorflow v2.4.0` 
+We will change the dependency in the future after `tensorflow v2.4.0` release
+```bash
+git clone https://github.com/MahmoudWahdan/dialog-nlu.git
+cd dialog-nlu
+pip install .
 ```
 
-Using Transformers DistilBert example:
-``` bash
-python train_joint_trans.py --train=data/snips/train --val=data/snips/valid --save=saved_models/joint_distilbert_model --epochs=3 --batch=64 --cache_dir=transformers_cache_dir  --trans=distilbert-base-uncased --from_pt=false
-```
+## Examples:
+We provide [examples](https://github.com/MahmoudWahdan/dialog-nlu/examples) of how to use the library
 
-#### Evaluating the Joint Transformer NLU model:
-We make use of [seqeval library](https://github.com/chakki-works/seqeval) for computing f1-score per tag level not per token level.
-##### Required Parameters:
-|Argument|Description|Is Required|Default|
-|---|---|---|---|
-|```--model``` or ```-m```|Path to joint Transformer NLU model.|Yes||
-|```--data``` or ```-d```|Path to data in Goo et al format.|Yes||
-|```--batch``` or ```-bs```|Batch size.|No|128|
+## Training, Evaluation, and simple API script:
+We provide [scripts](https://github.com/MahmoudWahdan/dialog-nlu/scripts) to train, incremental training, and simple flask API.
 
-Using Transformers Bert example:
-``` bash
-python eval_joint_trans.py --model=saved_models/joint_trans_model --data=data/snips/test --batch=128
-```
+## Quick tour
 
-Using Transformers DistilBert example:
-``` bash
-python eval_joint_trans.py --model=saved_models/joint_distilbert_model --data=data/snips/test --batch=128
-```
+```python
+# imports
+from dialognlu import TransformerNLU, AutoNLU
+from dialognlu.readers.goo_format_reader import Reader
 
+# reading datasets
+train_path = "data/snips/train"
+val_path = "data/snips/valid"
+train_dataset = Reader.read(train_path)
+val_dataset = Reader.read(val_path)
 
-#### Running a basic REST service for the Joint BERT / ALBERT NLU model:
-##### Required Parameters:
-- ```--model``` or ```-m``` Path to joint BERT , ALBERT , or Trans NLU model.
-##### Optional Parameters:
-- ```--type``` or ```-tp``` to choose between `bert` and `albert` tensorflow-hub based models, and used `trans` for HuggingFace transformers based models. Default is `bert`
-
-
-```
-python bert_nlu_basic_api.py --model=saved_models/joint_albert_model --type=albert
-```
-
-```
-python bert_nlu_basic_api.py --model=saved_models/joint_distilbert_model --type=trans
-```
-
-##### Sample request: 
-- Method `/predict`
-- POST
-- Payload: 
-```
-{
-	"utterance": "make me a reservation in south carolina"
+# configurations of the model
+config = {
+    "pretrained_model_name_or_path": "distilbert-base-uncased",
+    "from_pt": False,
 }
+# create a joint NLU model from configurations
+nlu_model = TransformerNLU.from_config(config)
+
+# training the model
+nlu_model.train(train_dataset, val_dataset, epochs=3, batch_size=64)
+
+# saving model
+save_path = "saved_models/joint_distilbert_model"
+nlu_model.save(save_path)
+
+# loading the model and do incremental training
+
+# loading model
+nlu_model = AutoNLU.load(save_path)
+
+# Continue training
+nlu_model.train(train_dataset, val_dataset, epochs=1, batch_size=64)
+
+# evaluate the model
+test_path = "../data/snips/test"
+test_dataset = Reader.read(test_path)
+token_f1_score, tag_f1_score, report, acc = nlu_model.evaluate(test_dataset)
+print('Slot Classification Report:', report)
+print('Slot token f1_score = %f' % token_f1_score)
+print('Slot tag f1_score = %f' % tag_f1_score)
+print('Intent accuracy = %f' % acc)
+
+# do prediction
+utterance = "add sabrina salerno to the grime instrumentals playlist"
+result = nlu_model.predict(utterance)
 ```
 
-##### Sample Response:
-```
-{
-	"intent": {
-		"confidence": "0.9888",
-		"name": "BookRestaurant"
-	}, 
-	"slots": [
-	{
-		"slot": "state",
-		"value": "south carolina",
-		"start": 5,
-		"end": 6
-	}
-	]
+## Use Layer Pruning with NLU model
+It is supported only in transformer-based NLU models
+```python
+# imports
+from dialognlu import TransformerNLU, AutoNLU
+from dialognlu.readers.goo_format_reader import Reader
+
+# reading datasets
+train_path = "data/snips/train"
+val_path = "data/snips/valid"
+train_dataset = Reader.read(train_path)
+val_dataset = Reader.read(val_path)
+
+# configurations of the model
+config = {
+    "pretrained_model_name_or_path": "distilbert-base-uncased",
+    "from_pt": False,
+	"layer_pruning": {
+        "strategy": "top",
+        "k": 2
+    }
 }
+# create a joint NLU model from configurations
+nlu_model = TransformerNLU.from_config(config)
+
+# training the model
+nlu_model.train(train_dataset, val_dataset, epochs=3, batch_size=64)
 ```
-
-
-
