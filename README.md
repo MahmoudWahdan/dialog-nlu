@@ -54,10 +54,10 @@ pip install .
 ```
 
 ## Examples:
-We provide [examples](https://github.com/MahmoudWahdan/dialog-nlu/examples) of how to use the library
+We provide [examples](https://github.com/MahmoudWahdan/dialog-nlu/tree/master/examples) of how to use the library
 
 ## Training, Evaluation, and simple API script:
-We provide [scripts](https://github.com/MahmoudWahdan/dialog-nlu/scripts) to train, incremental training, and simple flask API.
+We provide [scripts](https://github.com/MahmoudWahdan/dialog-nlu/tree/master/scripts) to train, incremental training, and simple flask API.
 
 ## Quick tour
 
