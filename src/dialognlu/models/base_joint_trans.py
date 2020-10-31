@@ -22,6 +22,7 @@ class BaseJointTransformerModel(NLUModel):
         self.num_bert_fine_tune_layers = config.get('num_bert_fine_tune_layers', 10)
         self.intent_loss_weight = config.get('intent_loss_weight', 1.0)
         self.slots_loss_weight = config.get('slots_loss_weight', 3.0)
+        self.max_length = config.get('max_length')
         
         self.model_params = config
         
@@ -116,3 +117,64 @@ class BaseJointTransformerModel(NLUModel):
         new_model.model = tf.keras.models.load_model(os.path.join(load_folder_path, trans_model_name))
         new_model.compile_model()
         return new_model
+
+
+class TfliteBaseJointTransformerModel:
+
+    def __init__(self, config):
+        self.config = config
+        self.slots_num = config['slots_num']
+        self.interpreter = None
+
+    def predict_slots_intent(self, x, slots_vectorizer, intent_vectorizer, remove_start_end=True,
+                             include_intent_prob=False):
+        # x = {k:v[0] for k,v in x.items()}
+        valid_positions = x["valid_positions"]
+        x["valid_positions"] = self.prepare_valid_positions(valid_positions)
+        y_slots, y_intent = self.predict(x)
+        slots = slots_vectorizer.inverse_transform(y_slots, valid_positions)
+        if remove_start_end:
+            slots = [x[1:-1] for x in slots]
+            
+        if not include_intent_prob:
+            intents = np.array([intent_vectorizer.inverse_transform([np.argmax(i)])[0] for i in y_intent])
+        else:
+            intents = np.array([(intent_vectorizer.inverse_transform([np.argmax(i)])[0], round(float(np.max(i)), 4)) for i in y_intent])
+        return slots[0], intents[0]
+
+    def prepare_valid_positions(self, in_valid_positions):
+        in_valid_positions = np.expand_dims(in_valid_positions, axis=2)
+        in_valid_positions = np.tile(in_valid_positions, (1, 1, self.slots_num))
+        return in_valid_positions
+
+    def predict(self, inputs):
+        raise NotImplementedError()
+
+    @staticmethod
+    def load_model_by_class(clazz, path):
+        with open(os.path.join(path, 'params.json'), 'r') as json_file:
+            model_params = json.load(json_file)
+
+        new_model = clazz(model_params)
+        quant_model_file = os.path.join(path, 'model.tflite')
+        new_model.interpreter = tf.lite.Interpreter(model_path=str(quant_model_file), num_threads=1)
+        new_model.interpreter.allocate_tensors()
+        return new_model
+
+
+class TfliteBaseJointTransformer4inputsModel(TfliteBaseJointTransformerModel):
+
+    def __init__(self, config):
+        super(TfliteBaseJointTransformer4inputsModel, self).__init__(config)
+
+    def predict(self, inputs):
+        self.interpreter.set_tensor(self.interpreter.get_input_details()[0]["index"], inputs.get("input_word_ids").astype(np.int32))
+        self.interpreter.set_tensor(self.interpreter.get_input_details()[1]["index"], inputs.get("input_mask").astype(np.int32))
+        self.interpreter.set_tensor(self.interpreter.get_input_details()[2]["index"], inputs.get("input_type_ids").astype(np.int32))
+        self.interpreter.set_tensor(self.interpreter.get_input_details()[3]["index"], inputs.get("valid_positions").astype(np.float32))
+        output_index_0 = self.interpreter.get_output_details()[0]["index"]
+        output_index_1 = self.interpreter.get_output_details()[1]["index"]
+        self.interpreter.invoke()
+        intent = self.interpreter.get_tensor(output_index_0)
+        slots = self.interpreter.get_tensor(output_index_1)
+        return slots, intent

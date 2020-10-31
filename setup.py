@@ -20,7 +20,7 @@ extras = {}
 
 setup(
     name="dialognlu",
-    version="0.1.0",
+    version="0.2.0",
     author="Mahmoud Wahdan",
     author_email="mahmoud.a.wahdan@gmail.com",
     description="State-of-the-art Dialog NLU (Natural Language Understanding) Library with TensorFlow 2.x and keras",

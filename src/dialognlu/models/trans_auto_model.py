@@ -8,6 +8,7 @@ from .joint_trans_distilbert import JointTransDistilBertModel
 from .joint_trans_albert import JointTransAlbertModel
 #from .joint_trans_xlnet import JointTransXlnetModel
 from .joint_trans_roberta import JointTransRobertaModel
+from .model_pool import NluModelPool
 from ..compression.commons import from_pretrained
 from transformers import TFAutoModel
 import json
@@ -67,11 +68,15 @@ def create_joint_trans_model(config):
     return joint_model
 
 
-def load_joint_trans_model(load_folder_path):
+def load_joint_trans_model(load_folder_path, quantized=False, num_process=4):
     with open(os.path.join(load_folder_path, 'params.json'), 'r') as json_file:
         model_params = json.load(json_file)
     clazz = model_params['class']
-    if clazz not in LOAD_CLASS_NAME_2_MODEL:
-        raise Exception('%s not supported')
-    model = LOAD_CLASS_NAME_2_MODEL[clazz].load(load_folder_path)
+    if quantized:
+        print("Loading quantized model in %d processes" % num_process)
+        model = NluModelPool(clazz, load_folder_path, num_process)
+    else:
+        if clazz not in LOAD_CLASS_NAME_2_MODEL:
+            raise Exception('%s not supported')
+        model = LOAD_CLASS_NAME_2_MODEL[clazz].load(load_folder_path)
     return model

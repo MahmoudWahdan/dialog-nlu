@@ -29,7 +29,7 @@ val_dataset = Reader.read(val_path)
 pretrained_model_name_or_path = "distilbert-base-uncased"
 save_path = "../saved_models/joint_distilbert_model"
 
-epochs = 1 #3
+epochs = 3
 batch_size = 64
 
 
@@ -40,6 +40,8 @@ config = {
     "num_bert_fine_tune_layers": 10,
     "intent_loss_weight": 1.0,#0.2,
     "slots_loss_weight": 3.0,#2.0,
+
+    "max_length": 64, # You can set max_length (recommended) or leave it and it will be computed automatically based on longest training example
 }
 
 
@@ -47,5 +49,5 @@ nlu = TransformerNLU.from_config(config)
 nlu.train(train_dataset, val_dataset, epochs, batch_size)
 
 print("Saving ...")
-nlu.save(save_path)
+nlu.save(save_path, save_tflite=True, conversion_mode="hybrid_quantization")
 print("Done")

@@ -11,6 +11,7 @@ from .vectorizers.bert_vectorizer import BERTVectorizer
 from .vectorizers.tags_vectorizer import TagsVectorizer
 from .readers.dataset import NluDataset
 from .utils.data_utils import flatten, convert_to_slots
+from .utils.tf_utils import convert_to_tflite_model
 from sklearn.preprocessing import LabelEncoder
 from sklearn import metrics
 from seqeval.metrics import classification_report, f1_score
@@ -79,6 +80,11 @@ class JointNLU(NLU):
         print('Vectorizing training text ...')
         # train_input_ids, train_input_mask, train_segment_ids, train_valid_positions, train_sequence_lengths = self.text_vectorizer.transform(train_dataset.text)
         train_data = self.text_vectorizer.transform(train_dataset.text)
+        # get max if not exist
+        max_length = self.config.get("max_length", None)
+        if max_length is None:
+            max_length = self.text_vectorizer.max_length
+            self.config["max_length"] = max_length
         train_valid_positions = train_data["valid_positions"]
         if self.tags_vectorizer is None:
             print('Fitting tags encoder ...')
@@ -167,18 +173,22 @@ class TransformerNLU(JointNLU):
     def init_text_vectorizer(self):
         pretrained_model_name_or_path = self.config["pretrained_model_name_or_path"]
         cache_dir = self.config["cache_dir"]
-        max_length = None # TODO: support max_length
+        max_length = self.config.get("max_length", None) # get max_length or None. If None, it will be computed internally
         self.text_vectorizer = TransVectorizer(pretrained_model_name_or_path, max_length, cache_dir)
 
     def init_model(self):
         self.model = create_joint_trans_model(self.config)  
 
     @staticmethod
-    def load(path):
+    def load(path, quantized=False, num_process=4):
         new_instance = JointNLU.load_pickles(path, TransformerNLU)
-        new_instance.model = load_joint_trans_model(path)
+        new_instance.model = load_joint_trans_model(path, quantized, num_process)
         return new_instance
 
+    def save(self, path, save_tflite=False, conversion_mode="hybrid_quantization"):
+        super(TransformerNLU, self).save(path)
+        if save_tflite:
+            convert_to_tflite_model(self.model.model, os.path.join(path, "model.tflite"), conversion_mode=conversion_mode)
 
 
 class BertNLU(JointNLU):

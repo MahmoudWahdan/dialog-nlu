@@ -10,8 +10,8 @@ import numpy as np
 
 class TransVectorizer:
     
-    def __init__(self, pretrained_model_name_or_path, max_length, cache_dir=None):
-        self.max_length =max_length
+    def __init__(self, pretrained_model_name_or_path, max_length=None, cache_dir=None):
+        self.max_length = max_length
         self.tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path, cache_dir=cache_dir)
         self.tokenizer_type = self.tokenizer.__class__.__name__
         self.valid_start = None
@@ -76,12 +76,15 @@ class TransVectorizer:
             valid_positions.append(valid_pos)
 
         sequence_lengths = np.array([len(i) for i in input_ids])            
-        input_ids = tf.keras.preprocessing.sequence.pad_sequences(input_ids, padding='post')
-        input_mask = tf.keras.preprocessing.sequence.pad_sequences(input_mask, padding='post')
-        segment_ids = tf.keras.preprocessing.sequence.pad_sequences(segment_ids, padding='post')
-        valid_positions = tf.keras.preprocessing.sequence.pad_sequences(valid_positions, padding='post')
+        input_ids = tf.keras.preprocessing.sequence.pad_sequences(input_ids, padding='post', maxlen=self.max_length)
+        input_mask = tf.keras.preprocessing.sequence.pad_sequences(input_mask, padding='post', maxlen=self.max_length)
+        segment_ids = tf.keras.preprocessing.sequence.pad_sequences(segment_ids, padding='post', maxlen=self.max_length)
+        valid_positions = tf.keras.preprocessing.sequence.pad_sequences(valid_positions, padding='post', maxlen=self.max_length)
         result = {"input_word_ids": input_ids, "input_mask": input_mask, "input_type_ids": segment_ids,
                     "valid_positions": valid_positions, "sequence_lengths": sequence_lengths}
+        # set new max_length if None
+        if self.max_length is None:
+            self.max_length = input_ids.shape[1]
         return result
     
     

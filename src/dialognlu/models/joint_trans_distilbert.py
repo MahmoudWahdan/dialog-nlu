@@ -3,7 +3,7 @@
 @author: mwahdan
 """
     
-from .base_joint_trans import BaseJointTransformerModel
+from .base_joint_trans import BaseJointTransformerModel, TfliteBaseJointTransformerModel
 from .callbacks import F1Metrics
 import tensorflow as tf
 from tensorflow.keras.models import Model
@@ -18,9 +18,9 @@ class JointTransDistilBertModel(BaseJointTransformerModel):
         
 
     def build_model(self):
-        in_id = Input(shape=(None,), name='input_word_ids', dtype=tf.int32)
-        in_mask = Input(shape=(None,), name='input_mask', dtype=tf.int32)
-        in_valid_positions = Input(shape=(None, self.slots_num), name='valid_positions')
+        in_id = Input(shape=(self.max_length), name='input_word_ids', dtype=tf.int32)
+        in_mask = Input(shape=(self.max_length), name='input_mask', dtype=tf.int32)
+        in_valid_positions = Input(shape=(self.max_length, self.slots_num), name='valid_positions')
         bert_inputs = [in_id, in_mask]
         inputs = bert_inputs + [in_valid_positions]
         
@@ -79,3 +79,25 @@ class JointTransDistilBertModel(BaseJointTransformerModel):
     @staticmethod
     def load(load_folder_path):
         return BaseJointTransformerModel.load_model_by_class(JointTransDistilBertModel, load_folder_path, 'joint_distilbert_model.h5')
+
+
+
+class TfliteJointTransDistilBertModel(TfliteBaseJointTransformerModel):
+
+    def __init__(self, config):
+        super(TfliteJointTransDistilBertModel, self).__init__(config)
+
+    def predict(self, inputs):
+        self.interpreter.set_tensor(self.interpreter.get_input_details()[0]["index"], inputs.get("input_word_ids").astype(np.int32))
+        self.interpreter.set_tensor(self.interpreter.get_input_details()[1]["index"], inputs.get("input_mask").astype(np.int32))
+        self.interpreter.set_tensor(self.interpreter.get_input_details()[2]["index"], inputs.get("valid_positions").astype(np.float32))
+        output_index_0 = self.interpreter.get_output_details()[0]["index"]
+        output_index_1 = self.interpreter.get_output_details()[1]["index"]
+        self.interpreter.invoke()
+        intent = self.interpreter.get_tensor(output_index_0)
+        slots = self.interpreter.get_tensor(output_index_1)
+        return slots, intent
+
+    @staticmethod
+    def load(path):
+        return TfliteBaseJointTransformerModel.load_model_by_class(TfliteJointTransDistilBertModel, path)

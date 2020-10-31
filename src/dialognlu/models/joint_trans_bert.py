@@ -6,7 +6,8 @@
 import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense, Multiply, TimeDistributed
-from .base_joint_trans import BaseJointTransformerModel
+from .base_joint_trans import BaseJointTransformerModel, TfliteBaseJointTransformerModel, TfliteBaseJointTransformer4inputsModel
+import numpy as np
 
 
 class JointTransBertModel(BaseJointTransformerModel):
@@ -16,10 +17,10 @@ class JointTransBertModel(BaseJointTransformerModel):
         
 
     def build_model(self):
-        in_id = Input(shape=(None,), name='input_word_ids', dtype=tf.int32)
-        in_mask = Input(shape=(None,), name='input_mask', dtype=tf.int32)
-        in_segment = Input(shape=(None,), name='input_type_ids', dtype=tf.int32)
-        in_valid_positions = Input(shape=(None, self.slots_num), name='valid_positions')
+        in_id = Input(shape=(self.max_length), name='input_word_ids', dtype=tf.int32)
+        in_mask = Input(shape=(self.max_length), name='input_mask', dtype=tf.int32)
+        in_segment = Input(shape=(self.max_length), name='input_type_ids', dtype=tf.int32)
+        in_valid_positions = Input(shape=(self.max_length, self.slots_num), name='valid_positions')
         bert_inputs = [in_id, in_mask, in_segment]
         inputs = bert_inputs + [in_valid_positions]
         
@@ -41,3 +42,14 @@ class JointTransBertModel(BaseJointTransformerModel):
     @staticmethod    
     def load(load_folder_path):
         return BaseJointTransformerModel.load_model_by_class(JointTransBertModel, load_folder_path, 'joint_bert_model.h5')
+
+
+
+class TfliteJointTransBertModel(TfliteBaseJointTransformer4inputsModel):
+
+    def __init__(self, config):
+        super(TfliteJointTransBertModel, self).__init__(config)
+
+    @staticmethod
+    def load(path):
+        return TfliteBaseJointTransformerModel.load_model_by_class(TfliteJointTransBertModel, path)
