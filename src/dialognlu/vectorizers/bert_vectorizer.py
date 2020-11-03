@@ -11,6 +11,7 @@ import numpy as np
 class BERTVectorizer:
     
     def __init__(self, is_bert, bert_model_hub_path):
+        self.max_length = None # we don't use for now
         self.is_bert = is_bert
         self.bert_model_hub_path = bert_model_hub_path
         self.create_tokenizer_from_hub_module(is_bert=is_bert)
