@@ -172,7 +172,7 @@ class TransformerNLU(JointNLU):
 
     def init_text_vectorizer(self):
         pretrained_model_name_or_path = self.config["pretrained_model_name_or_path"]
-        cache_dir = self.config["cache_dir"]
+        cache_dir = self.config.get("cache_dir")
         max_length = self.config.get("max_length", None) # get max_length or None. If None, it will be computed internally
         self.text_vectorizer = TransVectorizer(pretrained_model_name_or_path, max_length, cache_dir)
 
