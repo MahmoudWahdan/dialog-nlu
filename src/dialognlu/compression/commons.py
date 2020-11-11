@@ -159,7 +159,6 @@ def from_pretrained_detailed(model_class, pretrained_model_name_or_path, *model_
             archive_file = hf_bucket_url(
                 pretrained_model_name_or_path,
                 filename=(WEIGHTS_NAME if from_pt else TF2_WEIGHTS_NAME),
-                use_cdn=use_cdn,
             )
 
         try:
