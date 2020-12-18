@@ -41,7 +41,7 @@ setup(
         "scipy>=1.5.2", "matplotlib>=3.3.2", "seaborn>=0.11.0",
         "xlrd>=1.2.0", "tensorflow-hub>=0.9.0", 
         "tensorflow-addons>=0.11.2",
-        "tf-nightly", "transformers>=3.2.0, <=3.5.1",
+        "tensorflow>=2.4.0", "transformers>=3.2.0, <=3.5.1",
         "seqeval>=0.0.17", "flask>=1.1.2"
     ],
     extras_require=extras,

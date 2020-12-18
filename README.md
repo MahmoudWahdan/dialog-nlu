@@ -45,8 +45,7 @@ And more models integration to come
 
 ## Installation
 You may choose to create python environment before installation.
-WARNING: `tf-nightly` is one of the library dependencies, becuase converting the model to tflite needs feature that exist only in `tensorflow v2.4.0` 
-We will change the dependency in the future after `tensorflow v2.4.0` release
+
 ```bash
 git clone https://github.com/MahmoudWahdan/dialog-nlu.git
 cd dialog-nlu
