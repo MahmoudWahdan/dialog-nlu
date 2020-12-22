@@ -105,6 +105,9 @@ class JointNLU(NLU):
         
         id2label = {i:v for i, v in enumerate(self.tags_vectorizer.label_encoder.classes_)}
 
+        if self.model is None:
+            self.init_model()
+
         if val_dataset is not None:
             print('Vectorizing validation text ...')
             # val_input_ids, val_input_mask, val_segment_ids, val_valid_positions, val_sequence_lengths = self.text_vectorizer.transform(val_dataset.text)
@@ -115,12 +118,13 @@ class JointNLU(NLU):
             print('Encoding validation intents ...')
             val_intents = self.intents_label_encoder.transform(val_dataset.intents).astype(np.int32)
 
-        if self.model is None:
-            self.init_model()
-
-        print('Training model ...')
-        self.model.fit(train_data, [train_tags, train_intents], validation_data=(val_data, [val_tags, val_intents]),
-                epochs=epochs, batch_size=batch_size, id2label=id2label)
+            print('Training model ...')
+            self.model.fit(train_data, [train_tags, train_intents], validation_data=(val_data, [val_tags, val_intents]),
+                    epochs=epochs, batch_size=batch_size, id2label=id2label)
+        else:
+            print('Training model ...')
+            self.model.fit(train_data, [train_tags, train_intents],
+                    epochs=epochs, batch_size=batch_size, id2label=id2label)
 
     def predict(self, utterance: str):
         tokens = utterance.split()

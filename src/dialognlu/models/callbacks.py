@@ -84,8 +84,10 @@ class F1Metrics(Callback):
         return score
 
     def on_epoch_end(self, epoch, logs={}):
-        X = self.validation_data[0]
-        y = self.validation_data[1][0]
-        y_true, y_pred = self.predict(X, y)
-        score = self.score(y_true, y_pred)
-        logs['f1'] = score
+        # check for validation data
+        if self.validation_data:
+            X = self.validation_data[0]
+            y = self.validation_data[1][0]
+            y_true, y_pred = self.predict(X, y)
+            score = self.score(y_true, y_pred)
+            logs['f1'] = score
