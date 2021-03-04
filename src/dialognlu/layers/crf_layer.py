@@ -82,7 +82,7 @@ class CRFLayer(Layer):
         Returns:
             loss: A scalar containing the log-likelihood of the given sequence of tag indices.
         """
-        y_true = tf.cast(tf.argmax(y_true, axis=-1), dtype=tf.int32)# 'int32')
+        # y_true = tf.cast(tf.argmax(y_true, axis=-1), tf.int32)
         log_likelihood, self.transition_params = crf.crf_log_likelihood(
             y_pred, y_true, self.sequence_lengths, self.transition_params)
         loss = tf.reduce_mean(-log_likelihood)

@@ -43,11 +43,10 @@ class JointBertCRFModel(JointBertModel):
         in_id = Input(shape=(None,), name='input_word_ids', dtype=tf.int32)
         in_mask = Input(shape=(None,), name='input_mask', dtype=tf.int32)
         in_segment = Input(shape=(None,), name='input_type_ids', dtype=tf.int32)
-        # in_valid_positions = Input(shape=(None, self.slots_num), name='valid_positions')
         sequence_lengths = Input(shape=(1), dtype='int32', name='sequence_lengths')
         
         bert_inputs = [in_id, in_mask, in_segment]
-        inputs = bert_inputs + [sequence_lengths]# [in_valid_positions, sequence_lengths]
+        inputs = bert_inputs + [sequence_lengths]
         
         if self.is_bert:
             name = 'BertLayer'
@@ -65,11 +64,13 @@ class JointBertCRFModel(JointBertModel):
 
         
     def fit(self, X, Y, validation_data=None, epochs=5, batch_size=32, id2label=None):
-        # X["valid_positions"] = self.prepare_valid_positions(X["valid_positions"])
-        # if validation_data is not None:
-        #     X_val, Y_val = validation_data
-        #     X_val["valid_positions"] = self.prepare_valid_positions(X_val["valid_positions"])
-        #     validation_data = (X_val, Y_val)
+        if "valid_positions" in X:
+            del X["valid_positions"]
+        if validation_data is not None:
+            X_val, Y_val = validation_data
+            if "valid_positions" in X_val:
+                del X_val["valid_positions"]
+            validation_data = (X_val, Y_val)
         
         history = self.model.fit(X, Y, validation_data=validation_data, 
                                  epochs=epochs, batch_size=batch_size)
@@ -79,15 +80,19 @@ class JointBertCRFModel(JointBertModel):
         self.visualize_metric(history.history, 'intent_classifier_acc')
         
         
-    def predict_slots_intent(self, x, slots_vectorizer, intent_vectorizer, remove_start_end=True):
+    def predict_slots_intent(self, x, slots_vectorizer, intent_vectorizer, remove_start_end=True,
+                            include_intent_prob=False):
         valid_positions = x["valid_positions"]
-        # x["valid_positions"] = self.prepare_valid_positions(valid_positions)
         y_slots, y_intent = self.predict(x)
         slots = slots_vectorizer.inverse_transform(y_slots, valid_positions)
         if remove_start_end:
             slots = [x[1:-1] for x in slots]
             
-        intents = np.array([intent_vectorizer.inverse_transform([np.argmax(y_intent[i])])[0] for i in range(y_intent.shape[0])])
+        if not include_intent_prob:
+            intents = np.array([intent_vectorizer.inverse_transform([np.argmax(y_intent[i])])[0] for i in range(y_intent.shape[0])])
+        else:
+            intents = np.array([(intent_vectorizer.inverse_transform([np.argmax(y_intent[i])])[0], round(float(np.max(y_intent[i])), 4)) for i in range(y_intent.shape[0])])
+
         return slots, intents
     
 

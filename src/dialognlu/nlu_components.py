@@ -208,7 +208,7 @@ class BertNLU(JointNLU):
     def init_text_vectorizer(self):
         model_type = self.config.get("model_type", "bert")
         if model_type == 'bert':
-            bert_model_hub_path = "https://tfhub.dev/tensorflow/bert_en_uncased_L-12_H-768_A-12/1"
+            bert_model_hub_path = "https://tfhub.dev/tensorflow/bert_en_uncased_L-12_H-768_A-12/2"
             is_bert = True
         elif model_type == 'albert':
             bert_model_hub_path = "https://tfhub.dev/tensorflow/albert_en_base/1"
@@ -252,7 +252,7 @@ class BertCrfNLU(JointNLU):
     def init_text_vectorizer(self):
         model_type = self.config.get("model_type", "bert")
         if model_type == 'bert':
-            bert_model_hub_path = "https://tfhub.dev/tensorflow/bert_en_uncased_L-12_H-768_A-12/1"
+            bert_model_hub_path = "https://tfhub.dev/tensorflow/bert_en_uncased_L-12_H-768_A-12/2"
             is_bert = True
         elif model_type == 'albert':
             bert_model_hub_path = "https://tfhub.dev/tensorflow/albert_en_base/1"
@@ -274,5 +274,5 @@ class BertCrfNLU(JointNLU):
     @staticmethod
     def load(path):
         new_instance = JointNLU.load_pickles(path, BertNLU)
-        new_instance.model = JointBertModel.load(path)
+        new_instance.model = JointBertCRFModel.load(path)
         return new_instance
