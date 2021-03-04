@@ -17,18 +17,18 @@ class TransVectorizer:
         self.valid_start = None
         self.sep_token = self.tokenizer.sep_token
         self.cls_token = self.tokenizer.cls_token
-        if self.tokenizer_type == 'BertTokenizer':
-            self.not_valid_start = '##'
-        elif self.tokenizer_type == 'DistilBertTokenizer':
-            self.not_valid_start = '##'
-        elif self.tokenizer_type == 'AlbertTokenizer':
-            self.valid_start = '▁'
-        elif self.tokenizer_type == 'XLNetTokenizer':
-            self.valid_start = '▁'
-        elif self.tokenizer_type == 'RobertaTokenizer':
-            self.valid_start = 'Ġ'
-        else:
-            raise Exception('%s is not supported tokenizer' % self.tokenizer_type)
+        # if self.tokenizer_type == 'BertTokenizer':
+        #     self.not_valid_start = '##'
+        # elif self.tokenizer_type == 'DistilBertTokenizer':
+        #     self.not_valid_start = '##'
+        # elif self.tokenizer_type == 'AlbertTokenizer':
+        #     self.valid_start = '▁'
+        # elif self.tokenizer_type == 'XLNetTokenizer':
+        #     self.valid_start = '▁'
+        # elif self.tokenizer_type == 'RobertaTokenizer':
+        #     self.valid_start = 'Ġ'
+        # else:
+        #     raise Exception('%s is not supported tokenizer' % self.tokenizer_type)
             
             
 #    def tokenize(self, text: str):

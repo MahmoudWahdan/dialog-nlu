@@ -8,10 +8,12 @@ import os
 import h5py
 from tensorflow.python.keras.saving import hdf5_format
 from transformers.configuration_utils import PretrainedConfig
-from transformers.configuration_auto import AutoConfig
+from transformers import AutoConfig
+# from transformers.configuration_auto import AutoConfig
 from transformers.file_utils import TF2_WEIGHTS_NAME, WEIGHTS_NAME, cached_path, hf_bucket_url, is_remote_url
 from transformers.modeling_tf_pytorch_utils import load_pytorch_checkpoint_in_tf2_model
-from transformers.modeling_tf_auto import TF_MODEL_MAPPING
+from transformers import TF_MODEL_MAPPING
+# from transformers.modeling_tf_auto import TF_MODEL_MAPPING
 from .layer_pruning import modify_num_of_layers, rename_layers_in_strategy, rename_layers
 
 
