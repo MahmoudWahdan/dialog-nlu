@@ -40,6 +40,7 @@ Supported Models Architecture:
 |TFDistilBertModel|```distilbert-base-uncased```|Yes|
 |TFAlbertModel|```albert-base-v1``` or ```albert-base-v2```|Not yet|
 |TFRobertaModel|```roberta-base``` or ```distilroberta-base```|Yes|
+|TFXLNetModel|```xlnet-base-cased```|No|
 And more models integration to come
 
 

@@ -6,7 +6,7 @@
 from .joint_trans_bert import JointTransBertModel
 from .joint_trans_distilbert import JointTransDistilBertModel
 from .joint_trans_albert import JointTransAlbertModel
-#from .joint_trans_xlnet import JointTransXlnetModel
+from .joint_trans_xlnet import JointTransXlnetModel
 from .joint_trans_roberta import JointTransRobertaModel
 from .model_pool import NluModelPool
 from ..compression.commons import from_pretrained
@@ -19,7 +19,7 @@ TYPE_2_JOINT_MODEL = {
     'TFBertModel': JointTransBertModel,
     'TFDistilBertModel': JointTransDistilBertModel,
     'TFAlbertModel': JointTransAlbertModel,
-#    'TFXLNetModel': JointTransXlnetModel,
+    'TFXLNetModel': JointTransXlnetModel,
     'TFRobertaModel': JointTransRobertaModel
 }
 
@@ -28,7 +28,7 @@ LOAD_CLASS_NAME_2_MODEL = {
     'JointTransDistilBertModel': JointTransDistilBertModel,
     'JointTransBertModel': JointTransBertModel,
     'JointTransAlbertModel': JointTransAlbertModel,
-#    'JointTransXlnetModel': JointTransXlnetModel,
+    'JointTransXlnetModel': JointTransXlnetModel,
     'JointTransRobertaModel': JointTransRobertaModel
 }
 
@@ -47,8 +47,8 @@ def get_transformer_model(pretrained_model_name_or_path, cache_dir, from_pt, lay
         model = trans_model.distilbert
     elif trans_type == 'TFAlbertModel':
         model = trans_model.albert
-#    elif trans_type == 'TFXLNetModel':
-#        model = trans_model.transformer
+    elif trans_type == 'TFXLNetModel':
+       model = trans_model.transformer
     elif trans_type == 'TFRobertaModel':
         model = trans_model.roberta
     else:

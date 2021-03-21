@@ -14,8 +14,8 @@ train_dataset = Reader.read(train_path)
 val_dataset = Reader.read(val_path)
 
 
-# pretrained_model_name_or_path = "xlnet-base-cased"
-# save_path = "../saved_models/joint_trans_xlnet_model"
+pretrained_model_name_or_path = "xlnet-base-cased"
+save_path = "../saved_models/joint_trans_xlnet_model"
 
 # pretrained_model_name_or_path = "roberta-base"
 # save_path = "../saved_models/joint_trans_roberta_model"
@@ -26,11 +26,11 @@ val_dataset = Reader.read(val_path)
 # pretrained_model_name_or_path = "bert-base-uncased"
 # save_path = "../saved_models/joint_trans_bert_model"
 
-pretrained_model_name_or_path = "distilbert-base-uncased"
-save_path = "../saved_models/joint_distilbert_model"
+# pretrained_model_name_or_path = "distilbert-base-uncased"
+# save_path = "../saved_models/joint_distilbert_model"
 
-epochs = 3
-batch_size = 64
+epochs = 5
+batch_size = 32 # 64
 
 
 config = {
@@ -49,5 +49,5 @@ nlu = TransformerNLU.from_config(config)
 nlu.train(train_dataset, val_dataset, epochs, batch_size)
 
 print("Saving ...")
-nlu.save(save_path, save_tflite=True, conversion_mode="hybrid_quantization")
+nlu.save(save_path, save_tflite=True, conversion_mode="normal")
 print("Done")

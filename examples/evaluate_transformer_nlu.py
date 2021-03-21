@@ -7,7 +7,8 @@ from dialognlu import TransformerNLU
 from dialognlu.readers.goo_format_reader import Reader
 
 
-model_path = "../saved_models/joint_distilbert_model"
+# model_path = "../saved_models/joint_distilbert_model"
+model_path = "../saved_models/joint_trans_xlnet_model"
 
 print("Loading model ...")
 nlu = TransformerNLU.load(model_path)

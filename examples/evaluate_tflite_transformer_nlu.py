@@ -16,10 +16,12 @@ import time
 num_process = 2
 
 
-model_path = "../saved_models/joint_distilbert_model"
+# model_path = "../saved_models/joint_distilbert_model"
 # model_path = "../saved_models/joint_trans_bert_model"
 # model_path = "../saved_models/joint_trans_albert_model"
 # model_path = "../saved_models/joint_trans_roberta_model"
+model_path = "../saved_models/joint_trans_xlnet_model"
+
 
 print("Loading model ...")
 nlu = TransformerNLU.load(model_path, quantized=True, num_process=num_process)

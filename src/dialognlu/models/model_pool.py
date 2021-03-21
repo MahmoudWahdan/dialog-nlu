@@ -7,6 +7,7 @@ from .joint_trans_bert import TfliteJointTransBertModel
 from .joint_trans_distilbert import TfliteJointTransDistilBertModel
 from .joint_trans_albert import TfliteJointTransAlbertModel
 from .joint_trans_roberta import TfliteJointTransRobertaModel
+from .joint_trans_xlnet import TfliteJointTransXlnetModel
 import os
 import multiprocessing
 
@@ -15,7 +16,8 @@ LOAD_TFLITE_CLASS_NAME_2_MODEL = {
     'JointTransDistilBertModel': TfliteJointTransDistilBertModel,
     'JointTransBertModel': TfliteJointTransBertModel,
     'JointTransAlbertModel': TfliteJointTransAlbertModel,
-    'JointTransRobertaModel': TfliteJointTransRobertaModel
+    'JointTransRobertaModel': TfliteJointTransRobertaModel,
+    'JointTransXlnetModel': TfliteJointTransXlnetModel
 }
 
 
@@ -34,7 +36,7 @@ class WorkerProcessor:
     @staticmethod
     def load_model(clazz_name, load_folder_path):
         if clazz_name not in LOAD_TFLITE_CLASS_NAME_2_MODEL:
-            raise Exception('%s has no supported tflite model')
+            raise Exception(f'{clazz_name} has no supported tflite model')
         model = LOAD_TFLITE_CLASS_NAME_2_MODEL[clazz_name].load(load_folder_path)
         WorkerProcessor.model = model
         print("Model Loaded, process id: %d" % os.getpid())
